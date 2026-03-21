@@ -257,7 +257,7 @@ const ManageLoan = () => {
                                     onChange={(event) => setType(event.target.value)}
                                 />
                             </div>
-                            <div className='md:flex md:justify-center md:items-center col-span-2'>
+                            <div className='md:flex md:justify-center md:items-center col-span-1'>
                                 <Button
                                     btnName={"Apply Filter"}
                                     btnIcon={"MdFilterAlt"}

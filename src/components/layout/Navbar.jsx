@@ -91,7 +91,7 @@ function Navbar({ isOpen, toggleSidebar }) {
                             >
                                 <div className="h-10 w-10 rounded-full bg-white shadow-sm overflow-hidden">
                                     {adminUser?.firstname?.[0] ? (
-                                        <span className="bg-blue-200 text-primary h-10 w-10 flex items-center justify-center rounded-full text-xl font-bold">
+                                        <span className="bg-primary/10 text-primary h-10 w-10 flex items-center justify-center rounded-full text-xl font-bold">
                                             {adminUser.firstname[0].toUpperCase() + adminUser.lastname[0].toUpperCase()}
                                         </span>
                                     ) : (

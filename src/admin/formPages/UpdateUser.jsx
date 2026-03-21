@@ -416,7 +416,7 @@ function UpdateUser() {
                                     <button
                                         type="button"
                                         onClick={() => setIsEditing(true)}
-                                        className="bg-primary hover:bg-blue-700 text-white font-bold py-1.5 px-8 rounded focus:outline-none focus:shadow-outline"
+                                        className="bg-primary hover:bg-primary/50 text-white font-bold py-1.5 px-8 rounded focus:outline-none focus:shadow-outline"
                                     >
                                         Edit User
                                     </button>
@@ -428,7 +428,7 @@ function UpdateUser() {
 
                         <button
                             type="button"
-                            className="bg-red-500 hover:bg-red-700 text-white font-bold py-1.5 px-8 rounded focus:outline-none focus:shadow-outline ml-2"
+                            className="bg-amber-500 hover:bg-amber-700 text-white font-bold py-1.5 px-8 rounded focus:outline-none focus:shadow-outline ml-2"
                             onClick={() => navigate("/admin/manage-users")}
                         >
                             Cancel

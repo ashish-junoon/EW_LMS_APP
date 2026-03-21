@@ -19,8 +19,8 @@ import { useAuth } from "../../context/AuthContext";
 import Modal from "../utils/Modal";
 import { maskData } from "./maskData";
 import LoginPageFinder from "./LoginPageFinder";
-import { use } from "react";
-import Images from "../content/Images"
+
+import { stateCodelist } from "../content/Data";
 
 const GetScore = ({ btnEnable = false }) => {
   const [loading, setLoading] = useState(false);
@@ -61,47 +61,6 @@ const GetScore = ({ btnEnable = false }) => {
       }
     },
   });
-
-  // const AutoDownloadCreditReport = async (url) => {
-  //     const response = await fetch(url);
-  //     const blob = await response.blob();
-  //     const fileURL = window.URL.createObjectURL(blob);
-
-  //     const link = document.createElement("a");
-  //     link.href = fileURL;
-  //     link.setAttribute("download", "credit-report.pdf");
-  //     document.body.appendChild(link);
-  //     link.click();
-
-  //     document.body.removeChild(link);
-  //     window.URL.revokeObjectURL(fileURL);
-  // };
-
-  // const AutoDownloadCreditReport = async (pdfUrl) => {
-  //   try {
-  //     const response = await fetch(pdfUrl, {
-  //       method: "GET",
-  //     });
-
-  //     if (!response.ok) {
-  //       throw new Error("Failed to download file");
-  //     }
-
-  //     const blob = await response.blob();
-  //     const url = window.URL.createObjectURL(blob);
-
-  //     const link = document.createElement("a");
-  //     link.href = url;
-  //     link.setAttribute("download", "credit-report.pdf");
-  //     document.body.appendChild(link);
-  //     link.click();
-
-  //     link.remove();
-  //     window.URL.revokeObjectURL(url);
-  //   } catch (error) {
-  //     console.error("Download error:", error);
-  //   }
-  // };
 
   const uploadCR = useFormik({
     initialValues: {
@@ -164,6 +123,9 @@ const GetScore = ({ btnEnable = false }) => {
   const dob = leadInfo?.personalInfo[0].dob;
 
   const formattedDOB = dob ? dob.split("-").reverse().join("-") : "";
+
+  const firstN = leadInfo?.personalInfo[0]?.full_name.split(" ")[0];
+  const secondN = leadInfo?.personalInfo[0]?.full_name.split(" ")[1] || firstN;
 
   if (nameParts.length === 1) {
     firstName = nameParts[0];
@@ -270,46 +232,99 @@ const GetScore = ({ btnEnable = false }) => {
     }
   };
 
+  // finding Statecodelist 
+  const normalize = (str) => str?.toLowerCase().replaceAll(" ", "").trim();
+  const code = stateCodelist?.find(
+    (item) =>
+      normalize(item.label) === normalize(leadInfo?.addressInfo?.[0]?.state),
+  );
+
   const getTransUnionScore = async () => {
     setLoading(true);
+    // const req = {
+    //   customerInfo: {
+    //     name: {
+    //       forename: firstName,
+    //       surname: lastName,
+    //     },
+    //     identificationNumber: {
+    //       identifierName: leadInfo?.kycInfo[0].pan_card_number,
+    //     },
+    //     address: {
+    //       streetAddress: leadInfo?.addressInfo[0]?.address,
+    //       city: leadInfo?.addressInfo[0]?.district,
+    //       postalCode: leadInfo?.addressInfo[0]?.zip_code,
+    //     },
+    //     emailID: leadInfo?.personalInfo[0]?.email_id,
+    //     dateOfBirth: leadInfo?.personalInfo[0]?.dob,
+    //     phoneNumber: {
+    //       number: leadInfo?.mobile_number,
+    //     },
+    //     gender: leadInfo?.personalInfo[0]?.gender,
+    //   },
+    //   productName: import.meta.env.VITE_COMPANY_ID,
+    //   companyName: import.meta.env.VITE_PRODUCT_NAME,
+    //   user_id: leadInfo?.user_id,
+    //   lead_id: leadInfo?.lead_id,
+    // };
+
     const req = {
-      customerInfo: {
-        name: {
-          forename: firstName,
-          surname: lastName,
+      FulfillOfferRequest: {
+        CustomerInfo: {
+          Name: {
+            Forename: firstN,
+            Surname: secondN,
+          },
+          IdentificationNumber: {
+            IdentifierName: "TaxId",
+            Id: leadInfo?.kycInfo[0].pan_card_number,
+          },
+          Address: {
+            PostalCode: leadInfo?.addressInfo[0]?.zip_code,
+            City: leadInfo?.addressInfo[0]?.state,
+            Region: code?.value,
+            StreetAddress: leadInfo?.addressInfo[0]?.address,
+            AddressType: "01",
+            AddressCategoryType: "PermanentAddress",
+          },
+          DateOfBirth: formattedDOB,
+          PhoneNumber: {
+            Number: leadInfo?.mobile_number,
+          },
+          Email: leadInfo?.personalInfo[0]?.email_id,
+          Gender: leadInfo?.personalInfo[0]?.gender,
         },
-        identificationNumber: {
-          identifierName: leadInfo?.kycInfo[0].pan_card_number,
-        },
-        address: {
-          streetAddress: leadInfo?.addressInfo[0]?.address,
-          city: leadInfo?.addressInfo[0]?.district,
-          postalCode: leadInfo?.addressInfo[0]?.zip_code,
-        },
-        emailID: leadInfo?.personalInfo[0]?.email_id,
-        dateOfBirth: leadInfo?.personalInfo[0]?.dob,
-        phoneNumber: {
-          number: leadInfo?.mobile_number,
-        },
-        gender: leadInfo?.personalInfo[0]?.gender,
       },
-      productName: import.meta.env.VITE_COMPANY_ID,
-      companyName: import.meta.env.VITE_PRODUCT_NAME,
       user_id: leadInfo?.user_id,
       lead_id: leadInfo?.lead_id,
+      company_id: import.meta.env.VITE_COMPANY_ID,
+      productName: import.meta.env.VITE_PRODUCT_NAME,
     };
 
     try {
       const response = await ScoreFromTransunion(req);
-      if (response.success) {
+      if (response.Status == "true") {
+        // setLeadInfo((prev) => ({
+        //   ...prev,
+        //   ...response,
+        // }));
         setLeadInfo((prev) => ({
           ...prev,
-          ...response,
+          cibilCreditScores: [
+            {
+              name: response?.Data?.name,
+              mobile: response?.Data?.mobile,
+              pan_number: response?.Data?.pan,
+              credit_score: response?.Data?.creditScore,
+              credit_report_link: response?.Data?.creditReportLink,
+              provider: response?.provider,
+            },
+          ],
         }));
         setLoading(false);
         toast.success(response.message);
       } else {
-        toast.error(response.message);
+        toast.error("Data does not exist in Bureau Report!" || response.message);
       }
     } catch (error) {
       console.error("Error fetching data:", error);
@@ -569,7 +584,7 @@ const GetScore = ({ btnEnable = false }) => {
                 btnIcon={"IoCloseCircleOutline"}
                 type={"button"}
                 onClick={() => setIsUplaod(false)}
-                style="min-w-[100px] md:w-auto text-xs font-semibold mt-4 py-1 px-4 border border-primary text-primary border hover:border-danger hover:bg-danger hover:text-black hover:font-bold italic"
+                style="min-w-[100px] md:w-auto text-xs font-semibold mt-4 py-1 px-4 border border-primary text-primary border hover:border-danger hover:bg-danger hover:text-white hover:font-bold italic"
               />
             </div>
           </form>

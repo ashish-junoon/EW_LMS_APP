@@ -136,7 +136,7 @@ const AppCard = ({ data }) => {
               <div className="">
                 <button
                   onClick={() => setIsApprove(true)}
-                  className="w-full bg-red-500 text-white py-1 max-md:py-2 px-4 rounded mt-2 md:text-xs text-sm font-semibold shadow"
+                  className="w-full bg-amber-500 text-white py-1 max-md:py-2 px-4 rounded mt-2 md:text-xs text-sm font-semibold shadow"
                 >
                   Reject Profile Image
                 </button>

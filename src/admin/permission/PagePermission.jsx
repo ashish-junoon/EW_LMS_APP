@@ -194,7 +194,7 @@ const PagePermission = () => {
                                 <Button
                                     btnName={"Save Permission"}
                                     btnIcon="RiUserSettingsLine"
-                                    style={"bg-primary hover:bg-blue-700 text-white font-medium py-2 px-4 rounded"}
+                                    style={"bg-primary hover:bg-primary/50 text-white font-medium py-2 px-4 rounded"}
                                     type={"button"}
                                     onClick={handleSave}
                                 />

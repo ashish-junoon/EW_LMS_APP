@@ -381,7 +381,7 @@ function EMISchedule({ data, loan_Id }) {
     }
   }, [pullPaymentFormik.values.collection_status, activeLoan]);
 
-  //
+  
   const formik = useFormik({
     initialValues: {
       bankName: "",

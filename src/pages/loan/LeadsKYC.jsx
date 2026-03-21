@@ -112,7 +112,7 @@ const LeadsKYC = () => {
       cell: (row) => (
         <button
           onClick={() => handleHoldStatus(row.lead_id, row.user_id)}
-          className="font-bold text-[10px] border bg-blue-900 text-white border-primary px-2 py-0.5 rounded shadow-md italic"
+          className="font-bold text-[10px] border bg-primary text-white border-primary px-2 py-0.5 rounded shadow-md italic"
         >
           {/* <Icon name="MdOutlineRemoveRedEye" size={21} /> */}
           {isOnHold ? "UnHold" : "Hold"}    

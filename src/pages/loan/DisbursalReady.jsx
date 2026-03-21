@@ -471,7 +471,7 @@ const DisbursalReady = () => {
                 <button
                   onClick={() => setDisbursePage(page?.id)}
                   className={`text-base font-bold h-fit
-                ${DisbursePage === page?.id ? "bg-blue-900" : "bg-blue-300"} 
+                ${DisbursePage === page?.id ? "bg-primary" : "bg-blue-300"} 
               text-white px-3 py-0.5 rounded shadow-lg flex items-center gap-1`}
                 >
                   {page?.name}

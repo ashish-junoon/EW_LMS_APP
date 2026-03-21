@@ -6107,4 +6107,47 @@ const exportCollectionSource = [
 
 
 
-export { paymentType, notifyItems, steperItems, houseTypeOptions, genderOptions, maritalStatusOptions, features, leadRemarks, actionType, branchList, assignStatus, kycStatus, disbursalStatus, emiStatus, collectionStatus, manageApp, qcStatus, leadStatus, creditApprovalStatus, creditApprovalRemarks, loanStatus, collectionPaymentMode, relationOptions, userStatus, userRole, nameTitle, assessmentRemarks, paymentMode, educationOptions, emplyeeType, productType, repaymentFrequency, loanTenure, interestType, scorePlatform, documentType, emiStaus, leadStep1, rejectLead, eKYCRemarks, disbursedRemarks, addRemarkOptions, exportDataType, exportLeadSource, exportStatusSource, exportCollectionSource, disburesementMode };
+const stateCodelist = [
+  { label: "Jammu & Kashmir", value: "01" },
+  { label: "Himachal Pradesh", value: "02" },
+  { label: "Punjab", value: "03" },
+  { label: "Chandigarh", value: "04" },
+  { label: "Uttarakhand", value: "05" },
+  { label: "Haryana", value: "06" },
+  { label: "Delhi", value: "07" },
+  { label: "Rajasthan", value: "08" },
+  { label: "Uttar Pradesh", value: "09" },
+  { label: "Bihar", value: "10" },
+  { label: "Sikkim", value: "11" },
+  { label: "Arunachal Pradesh", value: "12" },
+  { label: "Nagaland", value: "13" },
+  { label: "Manipur", value: "14" },
+  { label: "Mizoram", value: "15" },
+  { label: "Tripura", value: "16" },
+  { label: "Meghalaya", value: "17" },
+  { label: "Assam", value: "18" },
+  { label: "West Bengal", value: "19" },
+  { label: "Jharkhand", value: "20" },
+  { label: "Odisha", value: "21" },
+  { label: "Chhattisgarh", value: "22" },
+  { label: "Madhya Pradesh", value: "23" },
+  { label: "Gujarat", value: "24" },
+  { label: "Daman and Diu", value: "25" },
+  { label: "Dadra and Nagar Haveli", value: "26" },
+  { label: "Maharashtra", value: "27" },
+  { label: "Andhra Pradesh", value: "28" },
+  { label: "Karnataka", value: "29" },
+  { label: "Goa", value: "30" },
+  { label: "Lakshadweep", value: "31" },
+  { label: "Kerala", value: "32" },
+  { label: "Tamil Nadu", value: "33" },
+  { label: "Puducherry", value: "34" },
+  { label: "Andaman and Nicobar Islands", value: "35" },
+  { label: "Telangana", value: "36" },
+  { label: "Other Territory", value: "97" },
+  { label: "Centre Jurisdiction", value: "99" },
+];
+
+
+
+export { stateCodelist, paymentType, notifyItems, steperItems, houseTypeOptions, genderOptions, maritalStatusOptions, features, leadRemarks, actionType, branchList, assignStatus, kycStatus, disbursalStatus, emiStatus, collectionStatus, manageApp, qcStatus, leadStatus, creditApprovalStatus, creditApprovalRemarks, loanStatus, collectionPaymentMode, relationOptions, userStatus, userRole, nameTitle, assessmentRemarks, paymentMode, educationOptions, emplyeeType, productType, repaymentFrequency, loanTenure, interestType, scorePlatform, documentType, emiStaus, leadStep1, rejectLead, eKYCRemarks, disbursedRemarks, addRemarkOptions, exportDataType, exportLeadSource, exportStatusSource, exportCollectionSource, disburesementMode };
