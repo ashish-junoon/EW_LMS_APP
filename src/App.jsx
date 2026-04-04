@@ -58,6 +58,7 @@ import VerifyOtp from "./pages/formPage/VerifyOtp";
 import FailurePage from "./pages/Response/FailurePage";
 import DisbursalReady from "./pages/loan/DisbursalReady";
 import LoanHistoryPage from "./pages/loan/LoanHistoryPage";
+import EditCollection from "./pages/formPage/EditCollection";
 
 function App() {
   const { adminUser } = useAuth();
@@ -163,6 +164,7 @@ function App() {
               <Route path="/admin/add-bank-account" element={<AddBankAccount />} />
               <Route path="/admin/permission" element={<PagePermission />} />
               <Route path="admin/edit-applicant" element={<EditLeads />} />
+              <Route path="admin/edit-collection" element={<EditCollection />} />
               {/* <Route path="admin/verify-otp" element={<VerifyOtp />} /> */}
               <Route path="/admin/fund-tracker" element={<FundTracker />} />
               <Route path="/admin/funders" element={<FunderTable />} />

@@ -236,7 +236,7 @@ function UpdateUser() {
                                 onBlur={formik.handleBlur}
                                 options={[
                                     { value: "married", label: "Married" },
-                                    { value: "unmarried", label: "Unmarried" },
+                                    { value: "unmarried", label: "UnMarried" },
                                 ]}
                             />
                             {renderError("maritalStatus")}

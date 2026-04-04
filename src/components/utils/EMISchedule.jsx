@@ -37,6 +37,7 @@ import { useNavigate } from "react-router-dom";
 import Images from "../content/Images";
 import LoginPageFinder from "./LoginPageFinder";
 import TimeInput from "../fields/TimeInput";
+import EditCollectionForm from "../form/EditCollectionForm";
 
 // Extend dayjs with the plugin
 dayjs.extend(isSameOrBefore);
@@ -45,6 +46,7 @@ function EMISchedule({ data, loan_Id }) {
   const [tableData, setTableData] = useState([]);
   const [schedule, setSchedule] = useState(null);
   const [IsOpen, setIsOpen] = useState(false);
+  const [IsEditColOpen, setIsEditColOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isPullNach, setIsPullNach] = useState(false);
   const [initialFile, setInitialFile] = useState(null);
@@ -88,8 +90,7 @@ function EMISchedule({ data, loan_Id }) {
 
   const role = adminUser?.role;
   const emp_code = adminUser?.emp_code;
-  const pullPaymentHistoriesData = data?.pullPaymentHistories
-  
+  const pullPaymentHistoriesData = data?.pullPaymentHistories;
 
   // Get today and yesterday for validation
   const today = dayjs().startOf("day");
@@ -103,6 +104,8 @@ function EMISchedule({ data, loan_Id }) {
     activeLoan?.due_amount_on_current_day,
   );
 
+  const isHardUpdateAllowed = adminUser.emp_code == "JC0020";
+  
   const loanDetails = [
     {
       label: "Loan Amount",
@@ -234,13 +237,13 @@ function EMISchedule({ data, loan_Id }) {
   }, [disbursedDate]);
 
   const getMinDate = (role, emp_code) => {
-    if (
+    if(emp_code == "JC0020"){
+    }else if (
       role == "admin" ||
       role == "administrator" ||
-      emp_code == "JC0020" ||
       emp_code == "JC0001" ||
       emp_code == "JC0043" ||
-      emp_code == "JC0001"
+      emp_code == "JC0002"
     ) {
       const today = new Date();
       today.setDate(today.getDate() - 30); // 30 days after today
@@ -381,7 +384,6 @@ function EMISchedule({ data, loan_Id }) {
     }
   }, [pullPaymentFormik.values.collection_status, activeLoan]);
 
-  
   const formik = useFormik({
     initialValues: {
       bankName: "",
@@ -498,7 +500,7 @@ function EMISchedule({ data, loan_Id }) {
               parseInt(status) !== 10 &&
               parseInt(status) !== 11 &&
               parseInt(status) !== 6 &&
-              parseInt(status) !== 12 &&
+              // parseInt(status) !== 12 &&
               parseInt(status) !== 13
             ) {
               return collected + waived === parseFloat(totalOutstanding);
@@ -533,7 +535,7 @@ function EMISchedule({ data, loan_Id }) {
       remarks: Yup.string().required("Remarks is required").min(3).max(50),
       // bank: Yup.string().required("Bank is required"),
       bank: Yup.string().when("collectionMode", {
-        is: (value) => value !== "CASH",  // if NOT cash → required
+        is: (value) => value !== "CASH", // if NOT cash → required
         then: (schema) => schema.required("Bank is required"),
         otherwise: (schema) => schema.notRequired(),
       }),
@@ -951,6 +953,20 @@ function EMISchedule({ data, loan_Id }) {
                   }}
                   style="min-w-[170px] hover:shadow-lg bg-primary text-white font-medium py-2 px-4 rounded"
                 />
+                {isHardUpdateAllowed && (
+                  <Button
+                    btnName={"Hard Collection Update"}
+                    btnIcon={"MdOutlineReceipt"}
+                    type={"button"}
+                    disabled={!permission}
+                    onClick={() =>
+                      navigate("/admin/edit-collection", {
+                        state: { user_id: userId, lead_id: leadId },
+                      })
+                    }
+                    style="min-w-[170px] hover:shadow-lg bg-primary text-white font-medium py-2 px-4 rounded"
+                  />
+                )}
                 {isDisbursed && (
                   <Button
                     btnName={"Update UTR"}
@@ -1332,6 +1348,17 @@ function EMISchedule({ data, loan_Id }) {
         </div>
       </Modal>
 
+      {/* Update Payment */}
+      {/* <Modal
+        isOpen={IsEditColOpen}
+        onClose={() => setIsEditColOpen(false)}
+        // heading={"Update Payment"}
+      >
+        <div className="">
+          <EditCollectionForm />
+        </div>
+      </Modal> */}
+
       {/* Write Off */}
       <Modal
         isOpen={isWriteoff}
@@ -1433,49 +1460,71 @@ function EMISchedule({ data, loan_Id }) {
         {/* <div className="flex justify-end">
           <button className="bg-gray-200 px-3 py-1 text-sm my-2 font-semibold rounded-sm">Show History</button>
         </div> */}
-        {pullPaymentHistoriesData?.length > 0 ?
-        <div className="overflow-x-auto border mt-8 broder-gray-50 rounded-md">
-          <table className="min-w-full text-sm text-left border border-gray-500 rounded-md overflow-hidden shadow-sm text-center">
-            <thead className="bg-gray-100 text-gray-700 uppercase text-xs tracking-wider">
-              <tr>
-                <th className="px-2 py-1 border-b text-nowrap">Collection Status</th>
-                <th className="px-2 py-1 border-b text-nowrap">Transaction Id</th>
-                <th className="px-2 py-1 border-b text-nowrap">Bank Name</th>
-                <th className="px-2 py-1 border-b text-nowrap">Account No</th>
-                <th className="px-2 py-1 border-b text-nowrap">Mandate Id</th>
-                <th className="px-2 py-1 border-b text-nowrap">Provider</th>
-                <th className="px-2 py-1 border-b text-nowrap">Amount</th>
-                <th className="px-2 py-1 border-b text-nowrap">Pull Request Date</th>
-                {/* <th className="px-2 py-1 border-b text-nowrap">Collection Time</th> */}
-                <th className="px-2 py-1 border-b text-nowrap">Created at</th>
-                <th className="px-2 py-1 border-b text-nowrap">Status</th>
-              </tr>
-            </thead>
+        {pullPaymentHistoriesData?.length > 0 ? (
+          <div className="overflow-x-auto border mt-8 broder-gray-50 rounded-md">
+            <table className="min-w-full text-sm text-left border border-gray-500 rounded-md overflow-hidden shadow-sm text-center">
+              <thead className="bg-gray-100 text-gray-700 uppercase text-xs tracking-wider">
+                <tr>
+                  <th className="px-2 py-1 border-b text-nowrap">
+                    Collection Status
+                  </th>
+                  <th className="px-2 py-1 border-b text-nowrap">
+                    Transaction Id
+                  </th>
+                  <th className="px-2 py-1 border-b text-nowrap">Bank Name</th>
+                  <th className="px-2 py-1 border-b text-nowrap">Account No</th>
+                  <th className="px-2 py-1 border-b text-nowrap">Mandate Id</th>
+                  <th className="px-2 py-1 border-b text-nowrap">Provider</th>
+                  <th className="px-2 py-1 border-b text-nowrap">Amount</th>
+                  <th className="px-2 py-1 border-b text-nowrap">
+                    Pull Request Date
+                  </th>
+                  {/* <th className="px-2 py-1 border-b text-nowrap">Collection Time</th> */}
+                  <th className="px-2 py-1 border-b text-nowrap">Created at</th>
+                  <th className="px-2 py-1 border-b text-nowrap">Status</th>
+                </tr>
+              </thead>
 
-            <tbody className="divide-y divide-gray-200 border-gray-100">
-              {
-                pullPaymentHistoriesData?.map((elm, index)=> {
-                  return(
+              <tbody className="divide-y divide-gray-200 border-gray-100">
+                {pullPaymentHistoriesData?.map((elm, index) => {
+                  return (
                     <tr kay={index} className="hover:bg-gray-50 transition">
-                      <td className="px-6 py-1 text-nowrap">{elm?.collection_status}</td>
-                      <td className="px-6 py-1 text-nowrap">{elm?.transaction_id}</td>
-                      <td className="px-6 py-1 text-nowrap">{elm?.bank_name}</td>
-                      <td className="px-6 py-1 text-nowrap">{elm?.customer_account_number}</td>
-                      <td className="px-6 py-1 text-nowrap">{elm?.emandate_id}</td>
+                      <td className="px-6 py-1 text-nowrap">
+                        {elm?.collection_status}
+                      </td>
+                      <td className="px-6 py-1 text-nowrap">
+                        {elm?.transaction_id}
+                      </td>
+                      <td className="px-6 py-1 text-nowrap">
+                        {elm?.bank_name}
+                      </td>
+                      <td className="px-6 py-1 text-nowrap">
+                        {elm?.customer_account_number}
+                      </td>
+                      <td className="px-6 py-1 text-nowrap">
+                        {elm?.emandate_id}
+                      </td>
                       <td className="px-6 py-1 text-nowrap">{elm?.provider}</td>
                       <td className="px-6 py-1 text-nowrap">{elm?.amount}</td>
-                      <td className="px-6 py-1 text-nowrap">{elm?.collection_date}</td>
+                      <td className="px-6 py-1 text-nowrap">
+                        {elm?.collection_date}
+                      </td>
                       {/* <td className="px-6 py-1 text-nowrap">{elm?.collection_time}</td> */}
-                      <td className="px-6 py-1 text-nowrap">{elm?.request_created_date}</td>
-                      <td className="px-6 py-1 text-nowrap">{elm?.request_is_process_status}</td>
+                      <td className="px-6 py-1 text-nowrap">
+                        {elm?.request_created_date}
+                      </td>
+                      <td className="px-6 py-1 text-nowrap">
+                        {elm?.request_is_process_status}
+                      </td>
                     </tr>
-                  )
-                })
-              }
-            </tbody>
-
-          </table>
-        </div> : ""}
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          ""
+        )}
 
         <div>
           <div className="col-span-2 border border-blue-100 rounded-lg overflow-hidden shadow mt-10">

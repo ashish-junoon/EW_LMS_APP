@@ -192,7 +192,7 @@ const genderOptions = [
 
 const maritalStatusOptions = [
     { label: "Married", value: "Married" },
-    { label: "Unmarried", value: "Unmarried" },
+    { label: "Unmarried", value: "UnMarried" },
 ]
 
 const educationOptions = [

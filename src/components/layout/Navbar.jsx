@@ -81,7 +81,7 @@ function Navbar({ isOpen, toggleSidebar }) {
                                         icon: <Icon name="MdPermIdentity" size={18} />,
                                     },
                                     {
-                                        onClick: () => logout(),
+                                        onClick: () => logout("USER"),
                                         label: 'Logout',
                                         icon: <Icon name="MdOutlinePowerSettingsNew" size={18} />,
                                     }

@@ -256,7 +256,8 @@ function Dashboard() {
                             // title="Monthly Loan Activity"
                             height={250}
                             type="area"
-                            colors={['#1E88E5', '#00C853', '#FFC107', '#FF3D00', '#6A1B9A', '#00ACC1']}
+                            // colors={['#1E88E5', '#00C853', '#FFC107', '#FF3D00', '#6A1B9A', '#00ACC1']}
+                            colors={['#00C853', '#FF3D00', '#1E88E5', '#FFC107', '#6A1B9A', '#00ACC1']}
                         />
                     </Card>
                 </div>

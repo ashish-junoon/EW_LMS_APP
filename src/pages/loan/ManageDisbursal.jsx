@@ -59,9 +59,10 @@ const ManageDisbursal = () => {
           })
         );
         setDisbursalData(transformedData);
-      } else {
-        toast.error(response.message);
-      }
+      } 
+      // else {
+      //   toast.error(response.message);
+      // }
     } catch (error) {
       console.error("Error fetching data:", error);
       toast.error("An error occurred while fetching data.");

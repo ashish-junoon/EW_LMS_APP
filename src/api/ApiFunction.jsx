@@ -8,6 +8,15 @@ const api = axios.create({
     },
 });
 
+export const GetIPAdress = async () => {
+    try {
+        const response = await api.get(import.meta.env.VITE_GET_IP_URL);
+        return response.data; // Return the API response data
+    } catch (error) {
+        console.error("Login error:", error.response?.data || error.message);
+        throw error; // Rethrow error to handle it in the calling function
+    }
+}
 
 //CRM Login
 export const UserLogin = async (req) => {
@@ -16,6 +25,16 @@ export const UserLogin = async (req) => {
         return response.data; // Return the API response data
     } catch (error) {
         console.error("Login error:", error.response?.data || error.message);
+        throw error; // Rethrow error to handle it in the calling function
+    }
+};
+
+export const HandleLogoutEmployee = async (req) => {
+    try {
+        const response = await api.post("/Admin/LogoutEmployee", req);
+        return response.data; // Return the API response data
+    } catch (error) {
+        console.error("Logout error:", error.response?.data || error.message);
         throw error; // Rethrow error to handle it in the calling function
     }
 };
@@ -772,6 +791,16 @@ export const UpdateMenualEMIPayment = async (req) => {
         console.error("Update Menual EMI Payment error:", error.response?.data || error.message);
         throw error; // Rethrow error to handle it in the calling function
     }
+}
+
+export const BulkCollectionUpdate = async (req) => {
+    try {
+        const response = await api.post("/Admin/ManualBulkCollectionUpdate", req);
+        return response.data; // Return the API response data
+    } catch (error) {
+        console.error("Update Menual EMI Payment error:", error.response?.data || error.message);
+        throw error; // Rethrow error to handle it in the calling function
+    }a
 }
 
 //Reloan Lead

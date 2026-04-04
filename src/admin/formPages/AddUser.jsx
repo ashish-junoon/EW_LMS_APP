@@ -163,7 +163,7 @@ function AddUser() {
                                 placeholder="Select"
                                 options={[
                                     { value: "married", label: "Married" },
-                                    { value: "unmarried", label: "Unmarried" },
+                                    { value: "unmarried", label: "UnMarried" },
                                 ]}
                                 {...formik.getFieldProps("maritalStatus")}
                             />
