@@ -18,8 +18,10 @@ import {
 const AuthContext = createContext();
 
 // Expiry times in milliseconds
-const EXPIRY_TIME = 5 * 60 * 60 * 1000; // 5 hours if inactive
-const EXTEND_TIME = 2 * 60 * 60 * 1000; // 2 hour if active
+// const EXPIRY_TIME = 5 * 60 * 60 * 1000; // 5 hours if inactive
+const EXPIRY_TIME = 15 * 60 * 1000; // 15 hours if inactive
+// const EXTEND_TIME = 2 * 60 * 60 * 1000; // 2 hour if active
+const EXTEND_TIME = 15 * 60 * 1000; // 15 hour if active
 
 let LogedInuser;
 const authReducer = (state, action) => {
@@ -65,15 +67,19 @@ export const AuthProvider = ({ children }) => {
     handleLogout(logout_type);
     dispatch({ type: "LOGOUT" });
   }, []);
-  
+
   //--------------------------------a
   //   Logout Via API for Tracking
   //--------------------------------
   const handleLogout = async (type) => {
     const ipAddress = await GetIPAdress();
-    
+    let sessionlog =
+      LogedInuser?.user?.employee_Session_Logs[0].session_log_id ||
+      storedData?.user?.employee_Session_Logs[0].session_log_id;
+
     let req = {
       emp_code: LogedInuser?.user?.emp_code || storedData?.user?.emp_code,
+      session_log_id: sessionlog,
       logout_type: type,
       system_ip: ipAddress?.ip,
       device_info: browserName + " " + browserVersion,
@@ -81,14 +87,14 @@ export const AuthProvider = ({ children }) => {
       product_name: import.meta.env.VITE_PRODUCT_NAME,
       company_id: import.meta.env.VITE_COMPANY_ID,
     };
-    
+
     try {
       const response = await HandleLogoutEmployee(req);
-    //   if (response.status) {
-    //     toast.success(response.message || "Logout Successfull");
-    //   } else {
-    //     toast.error("Something went wrong!");
-    //   }
+      //   if (response.status) {
+      //     toast.success(response.message || "Logout Successfull");
+      //   } else {
+      //     toast.error("Something went wrong!");
+      //   }
     } catch (error) {
       console.log("Error in Logout: ", error);
     }

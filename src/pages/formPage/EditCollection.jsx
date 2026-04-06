@@ -12,6 +12,8 @@ import { useOpenLeadContext } from "../../context/OpenLeadContext";
 import { Helmet } from "react-helmet";
 import { useLocation, useNavigate } from "react-router-dom";
 import EditCollectionForm from "../../components/form/EditCollectionForm";
+import EMISchedule from "../../components/utils/EMISchedule";
+import ClosedCard from "../../components/utils/ClosedCard";
 
 const EditCollection = () => {
   const [userData, setUserData] = useState(null);
@@ -23,6 +25,7 @@ const EditCollection = () => {
 //   console.log(location);
   const userid = location?.state?.user_id;
   const leadid = location?.state?.lead_id;
+  const loanid = userData?.selectedproduct[0]?.loan_id
 
   const fetchData = async ({ UserId, leadId, clicked }) => {
     setIsLoading(true);
@@ -152,6 +155,25 @@ const EditCollection = () => {
           <div>
             <EditCollectionForm data={userData} />
           </div>
+
+          {userData !== null && (
+        <>
+          <div>
+            <AppCard />
+          </div>
+          <div className="mt-4"></div>
+
+          <div>
+            <EditCollectionForm data={userData} />
+          </div>
+
+          {userData?.lead_status === 6 ? (
+            <EMISchedule hideincollection={true} data={userData} loan_Id={loanid} />
+          ) : (
+            <ClosedCard hideincollection={true} data={userData} />
+          )}
+        </>
+      )}
         </>
       )}
     </>

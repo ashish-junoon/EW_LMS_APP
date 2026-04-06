@@ -20,6 +20,9 @@ import {
 
 const Login = () => {
   const [ipAddress, setIPAddress] = useState("");
+  const [location, setLoaction] = useState({
+    lat: "", long : ""
+  });
   const { login } = useAuth();
   const navigate = useNavigate();
 
@@ -30,6 +33,42 @@ const Login = () => {
       .catch((error) => console.log(error));
   }, []);
 
+  
+  //-----------------------
+  //Get Users Location
+  //-----------------------
+
+  const getUserLocation = () => {
+    try {
+      if (!navigator.geolocation) {
+        toast.error("Geolocation is not supported by your browser.");
+        return;
+      }
+
+      navigator.geolocation.getCurrentPosition(
+        async (position) => {
+          const lat = position.coords.latitude;
+          const lng = position.coords.longitude;
+
+          setLoaction({lat: lat, long: lng})
+        },
+        (error) => {
+          console.error(error);
+          toast.error("Location permission denied.");
+        },
+      );
+    } catch (err) {
+      console.error(err);
+      toast.error("Something went wrong while fetching location.");
+    }
+  };
+
+  useEffect(() => {
+    getUserLocation();
+  }, []);
+  
+
+  //Login Form Handle
   const formik = useFormik({
     initialValues: {
       userName: "",
@@ -40,7 +79,7 @@ const Login = () => {
       password: Yup.string().required("Password Required"),
     }),
     onSubmit: async ({ userName, password }) => {
-        
+      
       try {
         const request = {
           // user_name: userName,
@@ -51,7 +90,10 @@ const Login = () => {
           operating_system: osName + " " + osVersion,
           company_id: import.meta.env.VITE_COMPANY_ID,
           product_name: import.meta.env.VITE_PRODUCT_NAME,
+          latitude: String(location.lat),
+          longitude: String(location.long),
         };
+        console.log(request);
 
         const response = await UserLogin(request);
         if (response.status) {

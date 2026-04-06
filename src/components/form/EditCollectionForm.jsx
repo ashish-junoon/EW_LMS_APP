@@ -18,6 +18,8 @@ export default function EditCollectionForm({ data }) {
   const [Schedule, setSchedule] = useState({});
   const [TableData, setTableData] = useState([]);
 
+
+
   // 🔥 Convert File → Base64
   const toBase64 = (file) =>
     new Promise((resolve, reject) => {
@@ -293,6 +295,7 @@ export default function EditCollectionForm({ data }) {
                 value={item.collection_date}
                 onChange={formik.handleChange}
                 onBlur={formik.handleBlur}
+                // min={disbursement_date}
                 // max={new Date().toLocaleDateString("en-CA")}
                 error={
                   formik.touched.transactions?.[index]?.collection_date &&

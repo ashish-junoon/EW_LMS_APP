@@ -14,7 +14,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import { Loader } from "lucide-react";
 
-function ClosedCard({ data }) {
+function ClosedCard({ data, hideincollection }) {
   const product = data?.selectedproduct?.[0];
   const isClosed = data?.lead_status === 10;
   const navigate = useNavigate();
@@ -219,7 +219,7 @@ function ClosedCard({ data }) {
               />
               Closed Credit Line Details
             </h2>
-            {isClosed && (
+            {isClosed && !hideincollection && (
               <div className="flex gap-2">
                 <button
                   disabled={isNocsend}
@@ -333,7 +333,7 @@ function ClosedCard({ data }) {
             </div>
           </div>
 
-          <div className="flex justify-end gap-5">
+          {!hideincollection && <div className="flex justify-end gap-5">
             <Button
               btnName={"Reloan"}
               btnIcon={"RiFileList3Line"}
@@ -341,7 +341,7 @@ function ClosedCard({ data }) {
               onClick={() => setIsReloan(!isReloan)}
               style="min-w-[150px] md:w-auto my-4 py-1 px-4 border border-primary text-primary hover:border-success hover:text-success hover:font-semibold"
             />
-          </div>
+          </div>}
         </div>
       </div>
 
