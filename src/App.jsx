@@ -180,7 +180,7 @@ function App() {
               {/* <Route path="/users/user-view" element={<Users />} /> */}
 
               {/* Will Remove it After Imolementation */}
-              {/* <Route path="/manage-leads/disbursal-leads" element={<DisbursalReady />} />  */}
+              <Route path="/manage-leads/disbursal-leads" element={<DisbursalReady />} /> 
 
 
               {/* Dynamically generated routes based on permissions */}

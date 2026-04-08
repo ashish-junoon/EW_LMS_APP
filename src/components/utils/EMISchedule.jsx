@@ -236,14 +236,41 @@ function EMISchedule({ data, loan_Id, hideincollection }) {
     checkDisbursementStatus();
   }, [disbursedDate]);
 
+  // const getMinDate = (role, emp_code) => {
+  //   if(emp_code == "JC0020"){
+  //   }else if (
+  //     role == "admin" ||
+  //     role == "administrator" ||
+  //     emp_code == "JC0001" ||
+  //     emp_code == "JC0043" ||
+  //     emp_code == "JC0002"
+  //   ) {
+  //     const today = new Date();
+  //     today.setDate(today.getDate() - 30); // 30 days after today
+  //     const mindate = today.toISOString().split("T")[0];
+  //     return mindate;
+  //   } else {
+  //     const today = new Date();
+  //     today.setDate(today.getDate() - 4); // 5 days after today
+  //     const mindate = today.toISOString().split("T")[0];
+  //     return mindate;
+  //   }
+  // };
+
+
   const getMinDate = (role, emp_code) => {
-    if(emp_code == "JC0020"){
-    }else if (
-      role == "admin" ||
-      role == "administrator" ||
+    if (
+      emp_code == "JC0020" ||
+      emp_code == "JC0037" ||
       emp_code == "JC0001" ||
-      emp_code == "JC0043" ||
-      emp_code == "JC0002"
+      emp_code == "JC0044" ||
+      emp_code == "JC0061"
+    ) {
+      return;
+    } else if (
+      role == "admin" ||
+      emp_code == "JC0043"
+      // role == "administrator" ||
     ) {
       const today = new Date();
       today.setDate(today.getDate() - 30); // 30 days after today
@@ -256,7 +283,7 @@ function EMISchedule({ data, loan_Id, hideincollection }) {
       return mindate;
     }
   };
-
+  
   useEffect(() => {
     getFounder();
   }, []);

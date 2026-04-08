@@ -18,7 +18,41 @@ export default function EditCollectionForm({ data }) {
   const [Schedule, setSchedule] = useState({});
   const [TableData, setTableData] = useState([]);
 
+  //util
+const normalizeDate = (dateStr) => {
+  if (!dateStr) return "";
 
+  // Case 1: Already correct format (YYYY-MM-DD)
+  if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
+    return dateStr;
+  }
+
+  // Case 2: DD-MMM-YYYY (09-Jan-2026)
+  const [day, mon, year] = dateStr.split("-");
+
+  const months = {
+    Jan: "01",
+    Feb: "02",
+    Mar: "03",
+    Apr: "04",
+    May: "05",
+    Jun: "06",
+    Jul: "07",
+    Aug: "08",
+    Sep: "09",
+    Oct: "10",
+    Nov: "11",
+    Dec: "12",
+  };
+
+  return `${year}-${months[mon]}-${day.padStart(2, "0")}`;
+};
+
+const rawDate1 = Schedule?.activeLoanDetails?.disbursement_date;
+const rawDate2 = Schedule?.closedLoanDetails?.disbursement_date;
+
+// pick whichever exists
+const minDate = normalizeDate(rawDate1 || rawDate2);
 
   // 🔥 Convert File → Base64
   const toBase64 = (file) =>
@@ -295,6 +329,7 @@ export default function EditCollectionForm({ data }) {
                 value={item.collection_date}
                 onChange={formik.handleChange}
                 onBlur={formik.handleBlur}
+                min={minDate}
                 // min={disbursement_date}
                 // max={new Date().toLocaleDateString("en-CA")}
                 error={
@@ -355,7 +390,7 @@ export default function EditCollectionForm({ data }) {
                 name="collection_status"
                 placeholder="Collection Status"
                 options={[
-                  { label: "Sattle", value: 12 },
+                  { label: "Settle", value: 12 },
                   { label: "Close", value: 10 },
                 ]}
                 {...formik.getFieldProps("collection_status")}

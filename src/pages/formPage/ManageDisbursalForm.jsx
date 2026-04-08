@@ -670,14 +670,14 @@ const ManageDisbursalForm = () => {
       {permission && (
         <div className="col-span-2">
           <div className="flex justify-end mt-3 gap-5">
-            {/* <Button
+            <Button
               btnName={"Ready for Disbursed"}
               btnIcon={"MdOutlineCheckCircleOutline"}
               type={"submit"}
               disabled={isOnHold}
               onClick={handleReadyDisbursed}
               style="min-w-[150px] text-sm italic font-semibold md:w-auto my-4 py-1 border-primary px-4 text-white bg-primary border hover:border-primary text-primary hover:bg-white hover:text-primary"
-            /> */}
+            />
             <Button
               btnName={"Mark as Disbursed"}
               btnIcon={"MdOutlineCheckCircleOutline"}

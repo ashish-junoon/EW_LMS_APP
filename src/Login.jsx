@@ -93,7 +93,6 @@ const Login = () => {
           latitude: String(location.lat),
           longitude: String(location.long),
         };
-        console.log(request);
 
         const response = await UserLogin(request);
         if (response.status) {

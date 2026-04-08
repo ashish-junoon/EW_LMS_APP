@@ -156,24 +156,11 @@ const EditCollection = () => {
             <EditCollectionForm data={userData} />
           </div>
 
-          {userData !== null && (
-        <>
-          <div>
-            <AppCard />
-          </div>
-          <div className="mt-4"></div>
-
-          <div>
-            <EditCollectionForm data={userData} />
-          </div>
-
           {userData?.lead_status === 6 ? (
             <EMISchedule hideincollection={true} data={userData} loan_Id={loanid} />
           ) : (
             <ClosedCard hideincollection={true} data={userData} />
           )}
-        </>
-      )}
         </>
       )}
     </>

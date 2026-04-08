@@ -39,6 +39,8 @@ const DisbursalReady = () => {
     0,
   );
 
+  let TotalAmt = tableData.reduce((acc, item )=> item.disburesement_amount + acc, 0)
+
   // alert(JSON.stringify(adminUser));
 
   const dateToday = new Date(new Date().setDate(new Date().getDate() - 0))
@@ -295,7 +297,7 @@ const DisbursalReady = () => {
     // },
     {
       name: "Move for Disburse",
-      omit: DisbursePage !== 26,
+      omit: DisbursePage == 24,
       width: "150px",
       cell: (row) => (
         <button
@@ -471,7 +473,7 @@ const DisbursalReady = () => {
                 <button
                   onClick={() => setDisbursePage(page?.id)}
                   className={`text-base font-bold h-fit
-                ${DisbursePage === page?.id ? "bg-primary" : "bg-blue-300"} 
+                ${DisbursePage === page?.id ? "bg-primary" : "bg-primary/60"} 
               text-white px-3 py-0.5 rounded shadow-lg flex items-center gap-1`}
                 >
                   {page?.name}
@@ -501,6 +503,17 @@ const DisbursalReady = () => {
             <p className="text-gray-500 font-semibold">
               Total Selected Leads :{" "}
               <span className="text-primary">{selectedRows.length}</span>
+            </p>
+          </div>
+        )}
+
+        {DisbursePage === 25 && (
+          <div className="bg-white shadow-xl px-5 py-3 border border-gray-200 rounded-md border-l-2-blue-500">
+            <p className="text-gray-500 font-semibold">
+              Total Amount :{" "}
+              <span className="text-primary">
+                ₹{TotalAmt?.toFixed(2) || 0.0}
+              </span>
             </p>
           </div>
         )}
