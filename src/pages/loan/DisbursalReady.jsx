@@ -481,7 +481,7 @@ const DisbursalReady = () => {
 
                 {DisbursePage !== page.id && (
                   <span className="absolute right-0 top-[-10px] bg-red-500 text-white font-bold text-xs w-[18px] h-[18px] flex justify-center align-center rounded-full">
-                    {page?.count}
+                    {page?.count || 0}
                   </span>
                 )}
               </div>

@@ -9,6 +9,7 @@ import { useAuth } from "../../context/AuthContext";
 import { BulkCollectionUpdate, GetEMISchedule } from "../../api/ApiFunction";
 import { toast } from "react-toastify";
 import { useEffect, useState } from "react";
+import { emiStaus } from "../content/Data";
 
 export default function EditCollectionForm({ data }) {
   const { adminUser } = useAuth();
@@ -73,7 +74,7 @@ const minDate = normalizeDate(rawDate1 || rawDate2);
         console.log(response.emi_Schedules);
 
         setSchedule(response);
-        setTableData(response.emi_Schedules || []);
+        setTableData(response.emi_Schedules?.reverse() || []);
       }
     } catch (error) {
       console.error("Error fetching data:", error);
@@ -389,10 +390,11 @@ const minDate = normalizeDate(rawDate1 || rawDate2);
                 icon="RiMapPinUserLine"
                 name="collection_status"
                 placeholder="Collection Status"
-                options={[
-                  { label: "Settle", value: 12 },
-                  { label: "Close", value: 10 },
-                ]}
+                // options={[
+                //   { label: "Settle", value: 12 },
+                //   { label: "Close", value: 10 },
+                // ]}
+                options={emiStaus}
                 {...formik.getFieldProps("collection_status")}
               />
               <ErrorMsg error={formik.errors.collection_status} />
