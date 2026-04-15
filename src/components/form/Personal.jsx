@@ -96,11 +96,11 @@ const getMinDate = () => {
           personalInfo: [
             {
               id: personaData?.id,
-              full_name: values?.fullName,
+              full_name: values?.fullName?.trim(),
               gender: values?.userGender,
               marital_status: values?.maritalStatus,
               birth_date: values?.dob,
-              email: values?.email,
+              email: values?.email?.trim(),
               personal_info_verified: leadStatus === 2 ? true : false,
               updated_by: adminUser.emp_code,
             },

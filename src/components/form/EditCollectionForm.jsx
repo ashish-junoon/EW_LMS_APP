@@ -11,7 +11,7 @@ import { toast } from "react-toastify";
 import { useEffect, useState } from "react";
 import { emiStaus } from "../content/Data";
 
-export default function EditCollectionForm({ data }) {
+export default function EditCollectionForm({ data, fetchUserData }) {
   const { adminUser } = useAuth();
   const leadId = data?.lead_id;
   const userId = data?.user_id;
@@ -19,41 +19,40 @@ export default function EditCollectionForm({ data }) {
   const [Schedule, setSchedule] = useState({});
   const [TableData, setTableData] = useState([]);
 
-  //util
-const normalizeDate = (dateStr) => {
-  if (!dateStr) return "";
+  const normalizeDate = (dateStr) => {
+    if (!dateStr) return "";
 
-  // Case 1: Already correct format (YYYY-MM-DD)
-  if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
-    return dateStr;
-  }
+    // Case 1: Already correct format (YYYY-MM-DD)
+    if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
+      return dateStr;
+    }
 
-  // Case 2: DD-MMM-YYYY (09-Jan-2026)
-  const [day, mon, year] = dateStr.split("-");
+    // Case 2: DD-MMM-YYYY (09-Jan-2026)
+    const [day, mon, year] = dateStr.split("-");
 
-  const months = {
-    Jan: "01",
-    Feb: "02",
-    Mar: "03",
-    Apr: "04",
-    May: "05",
-    Jun: "06",
-    Jul: "07",
-    Aug: "08",
-    Sep: "09",
-    Oct: "10",
-    Nov: "11",
-    Dec: "12",
+    const months = {
+      Jan: "01",
+      Feb: "02",
+      Mar: "03",
+      Apr: "04",
+      May: "05",
+      Jun: "06",
+      Jul: "07",
+      Aug: "08",
+      Sep: "09",
+      Oct: "10",
+      Nov: "11",
+      Dec: "12",
+    };
+
+    return `${year}-${months[mon]}-${day.padStart(2, "0")}`;
   };
 
-  return `${year}-${months[mon]}-${day.padStart(2, "0")}`;
-};
+  const rawDate1 = Schedule?.activeLoanDetails?.disbursement_date;
+  const rawDate2 = Schedule?.closedLoanDetails?.disbursement_date;
 
-const rawDate1 = Schedule?.activeLoanDetails?.disbursement_date;
-const rawDate2 = Schedule?.closedLoanDetails?.disbursement_date;
-
-// pick whichever exists
-const minDate = normalizeDate(rawDate1 || rawDate2);
+  // pick whichever exists
+  const minDate = normalizeDate(rawDate1 || rawDate2);
 
   // 🔥 Convert File → Base64
   const toBase64 = (file) =>
@@ -71,8 +70,6 @@ const minDate = normalizeDate(rawDate1 || rawDate2);
         lead_id: leadId,
       });
       if (response.status) {
-        console.log(response.emi_Schedules);
-
         setSchedule(response);
         setTableData(response.emi_Schedules?.reverse() || []);
       }
@@ -85,8 +82,6 @@ const minDate = normalizeDate(rawDate1 || rawDate2);
     if (!loanId || !leadId) return;
     fetchData();
   }, [loanId, leadId]);
-
-  console.log(TableData);
 
   const formatDate = (dateStr) => {
     if (!dateStr) return "";
@@ -185,6 +180,11 @@ const minDate = normalizeDate(rawDate1 || rawDate2);
         const response = await BulkCollectionUpdate(payload);
         if (response.status) {
           toast.success(response.message || "Collection Updated Successfully.");
+          fetchUserData({
+            UserId: userId,
+            leadId: leadId,
+            clicked: false,
+          });
           // resetForm();
         } else {
           toast.error(response.message || "Collection Updation failed!");
@@ -332,7 +332,6 @@ const minDate = normalizeDate(rawDate1 || rawDate2);
                 onBlur={formik.handleBlur}
                 min={minDate}
                 // min={disbursement_date}
-                // max={new Date().toLocaleDateString("en-CA")}
                 error={
                   formik.touched.transactions?.[index]?.collection_date &&
                   formik.errors.transactions?.[index]?.collection_date

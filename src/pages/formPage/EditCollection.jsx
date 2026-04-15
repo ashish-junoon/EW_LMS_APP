@@ -22,39 +22,52 @@ const EditCollection = () => {
   const { adminUser } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-//   console.log(location);
+
   const userid = location?.state?.user_id;
   const leadid = location?.state?.lead_id;
-  const loanid = userData?.selectedproduct[0]?.loan_id
+
+  // ✅ safe access
+  const loanid = userData?.selectedproduct?.[0]?.loan_id;
 
   const fetchData = async ({ UserId, leadId, clicked }) => {
     setIsLoading(true);
+
     const req = {
       lead_id: leadId,
       user_id: UserId,
-      login_user: adminUser.emp_code,
+      login_user: adminUser?.emp_code,
       permission: "w",
     };
+
     try {
       const response = await getLeadDetails(req);
-      if (response.status) {
+
+      if (response?.status) {
         setUserData(response);
         setLeadInfo(response);
 
-        // toast.success(response.message);
-        if (clicked)
+        if (clicked) {
           navigate("/admin/edit-collection", {
             state: { user_id: UserId, lead_id: leadId },
           });
+        }
       } else {
-        toast.error(response.message);
+        toast.error(response?.message || "Something went wrong");
       }
     } catch (error) {
-      console.error("Error fetching data:", error);
+      console.error(error);
       toast.error("An error occurred while fetching data.");
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const HandleRemoveState = () => {
+    navigate(location.pathname, { replace: true, state: {} });
+
+    // ✅ FIXED
+    setUserData(null);
+    setLeadInfo({});
   };
 
   const formik = useFormik({
@@ -66,7 +79,7 @@ const EditCollection = () => {
       UserId: Yup.string().required("UserId is required"),
       leadId: Yup.string().required("LeadId is required"),
     }),
-    onSubmit: async (values) => {
+    onSubmit: (values) => {
       fetchData({
         UserId: values.UserId,
         leadId: values.leadId,
@@ -75,11 +88,12 @@ const EditCollection = () => {
     },
   });
 
+  // ✅ optimized dependency
   useEffect(() => {
     if (leadid && userid) {
       fetchData({ UserId: userid, leadId: leadid });
     }
-  }, []);
+  }, [leadid, userid]);
 
   if (isLoading) {
     return <Loader />;
@@ -91,6 +105,7 @@ const EditCollection = () => {
         <title>Edit Collection</title>
         <meta name="New Leads" content="New Leads" />
       </Helmet>
+
       {!userData && (
         <div className="bg-white p-4 shadow rounded mb-10">
           <h1 className="text-xl font-bold">Edit Collection</h1>
@@ -98,6 +113,7 @@ const EditCollection = () => {
           <div className="mt-5 px-0 md:px-8 mb-5">
             <form onSubmit={formik.handleSubmit}>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-5">
+                
                 <div>
                   <TextInput
                     label="User ID"
@@ -114,6 +130,7 @@ const EditCollection = () => {
                     <ErrorMsg error={formik.errors.UserId} />
                   )}
                 </div>
+
                 <div>
                   <TextInput
                     label="Lead ID"
@@ -130,6 +147,7 @@ const EditCollection = () => {
                     <ErrorMsg error={formik.errors.leadId} />
                   )}
                 </div>
+
                 <div className="max-md:col-span-2">
                   <button
                     className="bg-primary text-white py-1.5 px-4 rounded mt-6 w-full cursor-pointer hover:bg-primary/80"
@@ -139,6 +157,7 @@ const EditCollection = () => {
                     {isLoading ? "Loading..." : "Search"}
                   </button>
                 </div>
+
               </div>
             </form>
           </div>
@@ -147,17 +166,29 @@ const EditCollection = () => {
 
       {userData !== null && (
         <>
+          <button
+            onClick={HandleRemoveState}
+            className="bg-primary text-white font-semibold px-4 py-1 rounded-md flex w-fit items-center gap-1 block mb-2"
+          >
+            Back
+          </button>
+
           <div>
             <AppCard />
           </div>
+
           <div className="mt-4"></div>
 
           <div>
-            <EditCollectionForm data={userData} />
+            <EditCollectionForm fetchUserData={fetchData} data={userData} />
           </div>
 
           {userData?.lead_status === 6 ? (
-            <EMISchedule hideincollection={true} data={userData} loan_Id={loanid} />
+            <EMISchedule
+              hideincollection={true}
+              data={userData}
+              loan_Id={loanid}
+            />
           ) : (
             <ClosedCard hideincollection={true} data={userData} />
           )}

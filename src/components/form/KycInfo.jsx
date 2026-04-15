@@ -131,14 +131,14 @@ const KycInfo = ({ btnEnable = false, incomplete }) => {
           kycInfo: [
             {
               id: kycInfo?.id,
-              aadhaar_number: values.adharNumber,
+              aadhaar_number: values.adharNumber?.trim(),
               aadhaar_front_image_name: adharFrontName,
               aadhaar_front_image_extn: adharFrontExt,
               aadhar_front_data: adharFrontBase64,
               aadhaar_back_image_name: adharBackName,
               aadhaar_back_image_extn: adharBackExt,
               aadhar_back_data: adharBackBase64,
-              pan_card_number: values.panNumber,
+              pan_card_number: values.panNumber?.trim(),
               pan_card_img_name: panCardName,
               pan_card_img_extn: panCardExt,
               pancard_data: panCardBase64,

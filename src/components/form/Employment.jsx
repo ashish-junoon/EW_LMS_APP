@@ -97,11 +97,11 @@ const Employment = ({ btnEnable = false, incomplete }) => {
           employmentInfo: [
             {
               id: employeeData?.id,
-              company_name: values?.company,
-              sector_type: values?.sector,
-              referral_code: values?.referral,
+              company_name: values?.company?.trim(),
+              sector_type: values?.sector?.trim(),
+              referral_code: values?.referral?.trim(),
               employed_since: values?.workingSince,
-              net_monthly_salary: values?.netSalary,
+              net_monthly_salary: values?.netSalary?.trim(),
               salary_date: values?.salaryDate,
               salary_slip_pdf_name:
                 values.file?.name ||

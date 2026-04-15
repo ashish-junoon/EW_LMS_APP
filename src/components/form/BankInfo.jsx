@@ -226,10 +226,10 @@ const BankInfo = ({ btnEnable = false, incomplete }) => {
           bankInfo: [
             {
               id: bankData?.id,
-              bank_name: values?.bankName,
-              account_holder_name: values?.accountHolder,
+              bank_name: values?.bankName?.trim(),
+              account_holder_name: values?.accountHolder?.trim(),
               account_number: values?.accountNumber,
-              ifsc_code: values?.ifscCode,
+              ifsc_code: values?.ifscCode?.trim(),
               bank_statement_image_name:
                 values.bankStatement?.name ||
                 documents.bank_statement[0]?.bank_statement_image_name,

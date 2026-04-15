@@ -122,9 +122,9 @@ const AddBank = ({fetchData}) => {
           bank_statement_image_extn:
             values.file?.name.split(".").pop(),
           bank_statement_data: convertedBase64,
-          account_holder_name: values.accountHolderName,
-          account_number: values.accountNumber,
-          ifsc_code: values.ifsc,
+          account_holder_name: values.accountHolderName?.trim(),
+          account_number: values.accountNumber?.trim(),
+          ifsc_code: values.ifsc?.trim(),
           created_by: adminUser?.emp_code,
           account_type: values.accountType,
           company_id: import.meta.env.VITE_COMPANY_ID,
