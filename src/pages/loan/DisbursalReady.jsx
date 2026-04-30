@@ -297,7 +297,7 @@ const DisbursalReady = () => {
     // },
     {
       name: "Move for Disburse",
-      omit: DisbursePage == 24,
+      omit: DisbursePage == 24 || DisbursePage == 27,
       width: "150px",
       cell: (row) => (
         <button
@@ -453,6 +453,11 @@ const DisbursalReady = () => {
     {
       id: 26,
       name: "Failed Leads",
+      count: leaddata?.total_failed_lead,
+    },
+    {
+      id: 27,
+      name: "In Process",
       count: leaddata?.total_failed_lead,
     },
   ];

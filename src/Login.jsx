@@ -20,51 +20,84 @@ import {
 
 const Login = () => {
   const [ipAddress, setIPAddress] = useState("");
+  const [loading, setLoading] = useState(false);
   const [location, setLoaction] = useState({
     lat: "", long : ""
   });
   const { login } = useAuth();
   const navigate = useNavigate();
 
-  useEffect(() => {
-    fetch(import.meta.env.VITE_GET_IP_URL)
-      .then((response) => response.json())
-      .then((data) => setIPAddress(data.ip))
-      .catch((error) => console.log(error));
-  }, []);
+  // useEffect(() => {
+  //   fetch(import.meta.env.VITE_GET_IP_URL)
+  //     .then((response) => response.json())
+  //     .then((data) => setIPAddress(data.ip))
+  //     .catch((error) => console.log(error));
+  // }, []);
+
+  const getIPAddress = async () => {
+    try {
+      const res = await fetch(import.meta.env.VITE_GET_IP_URL);
+      const data = await res.json();
+      return data.ip;
+    } catch (err) {
+      console.error(err);
+      return "";
+    }
+  };
 
   
   //-----------------------
   //Get Users Location
   //-----------------------
 
-  const getUserLocation = () => {
-    try {
+  // const getUserLocation = () => {
+  //   try {
+  //     if (!navigator.geolocation) {
+  //       toast.error("Geolocation is not supported by your browser.");
+  //       return;
+  //     }
+
+  //     navigator.geolocation.getCurrentPosition(
+  //       async (position) => {
+  //         const lat = position.coords.latitude;
+  //         const lng = position.coords.longitude;
+
+  //         setLoaction({lat: lat, long: lng})
+  //       },
+  //       (error) => {
+  //         console.error(error);
+  //         toast.error("Location permission denied.");
+  //       },
+  //     );
+  //   } catch (err) {
+  //     console.error(err);
+  //     toast.error("Something went wrong while fetching location.");
+  //   }
+  // };
+
+   const getUserLocation = () => {
+    return new Promise((resolve, reject) => {
       if (!navigator.geolocation) {
-        toast.error("Geolocation is not supported by your browser.");
+        reject("Geolocation not supported");
         return;
       }
 
       navigator.geolocation.getCurrentPosition(
-        async (position) => {
-          const lat = position.coords.latitude;
-          const lng = position.coords.longitude;
-
-          setLoaction({lat: lat, long: lng})
+        (position) => {
+          resolve({
+            lat: position.coords.latitude,
+            long: position.coords.longitude,
+          });
         },
         (error) => {
-          console.error(error);
-          toast.error("Location permission denied.");
+          reject(error);
         },
       );
-    } catch (err) {
-      console.error(err);
-      toast.error("Something went wrong while fetching location.");
-    }
+    });
   };
 
   useEffect(() => {
-    getUserLocation();
+    // getUserLocation();
   }, []);
   
 
@@ -79,32 +112,57 @@ const Login = () => {
       password: Yup.string().required("Password Required"),
     }),
     onSubmit: async ({ userName, password }) => {
-      
+      setLoading(true);
+
       try {
+        // ✅ Permission check
+        const permission = await navigator.permissions.query({
+          name: "geolocation",
+        });
+
+        if (permission.state === "denied") {
+          toast.info(
+            "Location is blocked. Please enable it from browser settings.",
+          );
+          return;
+        }
+
+        // ✅ Parallel fetch (FAST ⚡)
+        const [userLocation, ip] = await Promise.all([
+          getUserLocation(),
+          getIPAddress(),
+        ]);
+
+        if (!userLocation) {
+          toast.error("Location permission is required!");
+          return;
+        }
+
         const request = {
-          // user_name: userName,
           official_email: userName,
           password: password,
-          system_ip: ipAddress,
+          system_ip: ip, // ✅ always available
           device_info: browserName + " " + browserVersion,
           operating_system: osName + " " + osVersion,
           company_id: import.meta.env.VITE_COMPANY_ID,
           product_name: import.meta.env.VITE_PRODUCT_NAME,
-          latitude: String(location.lat),
-          longitude: String(location.long),
+          latitude: String(userLocation.lat),
+          longitude: String(userLocation.long),
         };
 
         const response = await UserLogin(request);
+
         if (response.status) {
           login(response);
           navigate("/");
-          // toast.success(response.message);
         } else {
           toast.error(response.message);
         }
       } catch (error) {
         console.error("Login error:", error);
-        toast.error("Something went wrong. Please try again.");
+        toast.error("Something went wrong.");
+      } finally {
+        setLoading(false);
       }
     },
   });
@@ -172,7 +230,7 @@ const Login = () => {
 
               <div className="flex justify-center">
                 <Button
-                  btnName="Login"
+                  btnName={loading ? "Loading..." : "Login"}
                   btnIcon="RiLoginCircleLine"
                   type="submit"
                   style="my-8 bg-primary text-white min-w-full"

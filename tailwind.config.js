@@ -7,7 +7,8 @@ export default {
         // primary: "#003397",
         // primary: "#ed502e", // blue
         // primary: "#026fcf", //light blue
-        primary: "#ed502e",
+        // primary: "#ed502e", //orange
+        primary: "#E76F2E",
         secondary: "#00e676",
         success: "#00b809",
         danger: "#ff0000",

@@ -13,7 +13,8 @@ const Table = ({ columns, data, title, handleFilter, pagination = true, selectab
         headCells: {
             style: {
                 // backgroundColor: "#003397",
-                backgroundColor: "#ed502e",
+                // backgroundColor: "#ed502e", // orange 
+                backgroundColor: "#E76F2E",
                 color: "white",
                 fontWeight: "bold",
             },

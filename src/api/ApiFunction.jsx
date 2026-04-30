@@ -5,12 +5,13 @@ const api = axios.create({
     baseURL: import.meta.env.VITE_API_BASE_URL,
     headers: {
         "Content-Type": "application/json", // Ensure JSON data is sent
+        "Cache-Control": "no-cache"
     },
 });
 
 export const GetIPAdress = async () => {
     try {
-        const response = await api.get(import.meta.env.VITE_GET_IP_URL);
+        const response = await axios.get(import.meta.env.VITE_GET_IP_URL);
         return response.data; // Return the API response data
     } catch (error) {
         console.error("Login error:", error.response?.data || error.message);

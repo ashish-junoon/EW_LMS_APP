@@ -712,10 +712,8 @@ function EMISchedule({ data, loan_Id, hideincollection }) {
     setIsLoading(true);
     try {
       const req = {
-        // emandate_id: data?.enachModel[0]?.mandate_id,
         emandate_id: mandateAccountDetails?.mandate_id,
         // amount: 10,
-        // amount: activeLoan?.due_amount_on_current_day?.toFixed(2),
         amount: Number(values?.amount), //
         // request_type: "PAYMENTCOLLECTION",
         lead_id: leadId,
@@ -728,8 +726,8 @@ function EMISchedule({ data, loan_Id, hideincollection }) {
         company_id: import.meta.env.VITE_COMPANY_ID,
         product_name: import.meta.env.VITE_PRODUCT_NAME,
         product_token:
-          "UABBAFMASQBBAFUARABIAEEAUgAtADEAMQAtAEQAZQBjAC0AMgAwADIANQA=", //
-        product_vendor_code: "PUX",
+          "dmVyaWZpZWR1MjAyNkBnbWFpbC5jb20gSnVub29uIENhcGl0YWwgU2VydmljZXMgUFZUIExURA==", //
+        product_vendor_code: "EWPL",
         comment: values?.comment,
         // Created_By: adminUser.emp_code
         request_created_by: adminUser.emp_code,
