@@ -12,6 +12,7 @@ import {
   GetUpdateLoanEMI,
   PullNACHPaymentEaseBuzz,
   PullPaymentUsingEaseBuzz,
+  getMandateHistory,
 } from "../../api/ApiFunction";
 import Button from "./Button";
 import Modal from "./Modal";
@@ -42,7 +43,7 @@ import EditCollectionForm from "../form/EditCollectionForm";
 // Extend dayjs with the plugin
 dayjs.extend(isSameOrBefore);
 
-function EMISchedule({ data, loan_Id, hideincollection }) {
+function EMISchedule({ data, loan_Id, hideincollection, fetchData }) {
   const [tableData, setTableData] = useState([]);
   const [schedule, setSchedule] = useState(null);
   const [IsOpen, setIsOpen] = useState(false);
@@ -54,8 +55,12 @@ function EMISchedule({ data, loan_Id, hideincollection }) {
   const [isCollected, setIsCollected] = useState(false);
   const [utrUpdate, setUtrUpdate] = useState(false);
   const [paymentInfo, setPaymentInfo] = useState(null);
+  const [historyData, setHistoryData] = useState(null);
+  // const [isMandateAuthorized, setisMandateAuthorized] = useState(false);
+  const [mandateselectedBank, setmandateselectedBank] = useState(null);
 
-  // console.log(paymentInfo);
+  const isMandateAuthorized = historyData?.find((elm)=> elm?.mandate_id == mandateselectedBank?.mandate_id)?.status == 'authorized'
+  // setisMandateAuthorized(mandateData?.status == 'authorized')
 
   const [isDisbursed, setIsDisbursed] = useState(false);
 
@@ -105,7 +110,7 @@ function EMISchedule({ data, loan_Id, hideincollection }) {
   );
 
   const isHardUpdateAllowed = adminUser.emp_code == "JC0020";
-  
+
   const loanDetails = [
     {
       label: "Loan Amount",
@@ -257,7 +262,6 @@ function EMISchedule({ data, loan_Id, hideincollection }) {
   //   }
   // };
 
-
   const getMinDate = (role, emp_code) => {
     if (
       emp_code == "JC0020" ||
@@ -283,7 +287,7 @@ function EMISchedule({ data, loan_Id, hideincollection }) {
       return mindate;
     }
   };
-  
+
   useEffect(() => {
     getFounder();
   }, []);
@@ -302,6 +306,28 @@ function EMISchedule({ data, loan_Id, hideincollection }) {
     }
   };
 
+  const fetchMandateHistory = async (selectedMandate) => {
+      const req = { lead_id: leadId };
+      // const req = {lead_id : "JRE6453"} // To test Only
+  
+      try {
+        // setIsLoading(true);
+        const response = await getMandateHistory(req);
+  
+        if (response.status) {
+          setHistoryData(response?.data);
+
+          // const mandateData = response?.data?.find((elm)=> elm.mandate_id == selectedMandate?.mandate_id)
+          // setisMandateAuthorized(mandateData?.status == 'authorized')
+        }
+      } catch (error) {
+        console.error("Error fetching data:", error);
+        toast.error("An error occurred while fetching data.");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
   useEffect(() => {
     if (activeLoan?.disbursed_amount) {
       formik.setFieldValue("disbursAmount", activeLoan.disbursed_amount);
@@ -314,11 +340,17 @@ function EMISchedule({ data, loan_Id, hideincollection }) {
       (el) => el.bank_name === selectedBank,
     );
 
+    setmandateselectedBank(selectedMandate)
+
     setMandateAccountDetails(selectedMandate);
     setIsEasebuzz(selectedMandate?.provider === "EASEBUZZ");
 
-    // console.log("selected:", selectedMandate);
   }, [selectedBank, data]);
+
+  useEffect(()=> {
+    fetchMandateHistory();
+  },[])
+  
 
   // alert(JSON.stringify(schedule, null, 2))
 
@@ -391,6 +423,12 @@ function EMISchedule({ data, loan_Id, hideincollection }) {
           toast.error("Please select a bank");
           return;
         }
+
+        if(!isMandateAuthorized){
+          toast.info("Mandate is not authorized!")
+          return;
+        }
+
         pullNachPaymentEaseBuz(values);
       } catch (error) {
         toast.error(error.message || "Something went wrong");
@@ -399,9 +437,9 @@ function EMISchedule({ data, loan_Id, hideincollection }) {
       }
     },
   });
-
+  
   useEffect(() => {
-    if (pullPaymentFormik.values.collection_status === "paid") {
+    if (pullPaymentFormik.values.collection_status === "close") {
       pullPaymentFormik.setFieldValue(
         "amount",
         activeLoan?.due_amount_on_current_day || "",
@@ -748,6 +786,7 @@ function EMISchedule({ data, loan_Id, hideincollection }) {
           navigate("/manage-loans/accounts");
         }, 5000);
         pullPaymentFormik.resetForm();
+        fetchData()
       } else {
         toast.info(response.message);
       }
@@ -939,18 +978,18 @@ function EMISchedule({ data, loan_Id, hideincollection }) {
   return (
     <>
       <div>
-        {!hideincollection &&
-        <div className="flex lg:justify-between max-lg:flex-col lg:items-center my-5 gap-5">
-          <div>
-            <h2>
-              Loan Account:{" "}
-              <span className="text-lg font-semibold">{loan_Id}</span>
-            </h2>
-          </div>
-          <div className="flex flex-wrap md:gap-5 gap-2">
-            {permission && (
-              <>
-                {/* <Button
+        {!hideincollection && (
+          <div className="flex lg:justify-between max-lg:flex-col lg:items-center my-5 gap-5">
+            <div>
+              <h2>
+                Loan Account:{" "}
+                <span className="text-lg font-semibold">{loan_Id}</span>
+              </h2>
+            </div>
+            <div className="flex flex-wrap md:gap-5 gap-2">
+              {permission && (
+                <>
+                  {/* <Button
                   btnName={"Write Off Amount"}
                   btnIcon={"MdOutlineReceipt"}
                   type={"button"}
@@ -958,55 +997,56 @@ function EMISchedule({ data, loan_Id, hideincollection }) {
                   onClick={() => setIsWriteoff(true)}
                   style="min-w-[170px] hover:shadow-lg bg-primary text-white font-medium py-2 px-4 rounded"
               /> */}
-                <Button
-                  btnName={"Pull Payment"}
-                  btnIcon={"RiSecurePaymentLine"}
-                  type={"button"}
-                  disabled={!permission}
-                  onClick={() => setIsPullNach(true)}
-                  style="min-w-[170px] hover:shadow-lg bg-primary text-white font-medium py-2 px-4 rounded"
-                />
-                <Button
-                  btnName={"Update Collection"}
-                  btnIcon={"MdOutlineReceipt"}
-                  type={"button"}
-                  disabled={!permission}
-                  onClick={() => {
-                    (setIsOpen(true),
-                      setTotalOutstanding(
-                        activeLoan?.due_amount_on_current_day,
-                      ));
-                  }}
-                  style="min-w-[170px] hover:shadow-lg bg-primary text-white font-medium py-2 px-4 rounded"
-                />
-                {isHardUpdateAllowed && (
                   <Button
-                    btnName={"Hard Collection Update"}
+                    btnName={"Pull Payment"}
+                    btnIcon={"RiSecurePaymentLine"}
+                    type={"button"}
+                    disabled={!permission}
+                    onClick={() => setIsPullNach(true)}
+                    style="min-w-[170px] hover:shadow-lg bg-primary text-white font-medium py-2 px-4 rounded"
+                  />
+                  <Button
+                    btnName={"Update Collection"}
                     btnIcon={"MdOutlineReceipt"}
                     type={"button"}
                     disabled={!permission}
-                    onClick={() =>
-                      navigate("/admin/edit-collection", {
-                        state: { user_id: userId, lead_id: leadId },
-                      })
-                    }
+                    onClick={() => {
+                      (setIsOpen(true),
+                        setTotalOutstanding(
+                          activeLoan?.due_amount_on_current_day,
+                        ));
+                    }}
                     style="min-w-[170px] hover:shadow-lg bg-primary text-white font-medium py-2 px-4 rounded"
                   />
-                )}
-                {isDisbursed && (
-                  <Button
-                    btnName={"Update UTR"}
-                    btnIcon={"MdOutlineReceipt"}
-                    type={"button"}
-                    disabled={!permission}
-                    onClick={() => setUtrUpdate(true)}
-                    style="min-w-[170px] hover:shadow-lg bg-primary text-white font-medium py-2 px-4 rounded"
-                  />
-                )}
-              </>
-            )}
+                  {isHardUpdateAllowed && (
+                    <Button
+                      btnName={"Hard Collection Update"}
+                      btnIcon={"MdOutlineReceipt"}
+                      type={"button"}
+                      disabled={!permission}
+                      onClick={() =>
+                        navigate("/admin/edit-collection", {
+                          state: { user_id: userId, lead_id: leadId },
+                        })
+                      }
+                      style="min-w-[170px] hover:shadow-lg bg-primary text-white font-medium py-2 px-4 rounded"
+                    />
+                  )}
+                  {isDisbursed && (
+                    <Button
+                      btnName={"Update UTR"}
+                      btnIcon={"MdOutlineReceipt"}
+                      type={"button"}
+                      disabled={!permission}
+                      onClick={() => setUtrUpdate(true)}
+                      style="min-w-[170px] hover:shadow-lg bg-primary text-white font-medium py-2 px-4 rounded"
+                    />
+                  )}
+                </>
+              )}
+            </div>
           </div>
-        </div>}
+        )}
 
         <div className="max-full mx-auto lg:p-6">
           <div className="overflow-hidden rounded-xl shadow-lg bg-white">
@@ -1491,57 +1531,73 @@ function EMISchedule({ data, loan_Id, hideincollection }) {
             <table className="min-w-full text-sm text-left border border-gray-500 rounded-md overflow-hidden shadow-sm text-center">
               <thead className="bg-gray-100 text-gray-700 uppercase text-xs tracking-wider">
                 <tr>
-                  <th className="px-2 py-1 border-b text-nowrap">
-                    Collection Status
-                  </th>
-                  <th className="px-2 py-1 border-b text-nowrap">
-                    Transaction Id
-                  </th>
-                  <th className="px-2 py-1 border-b text-nowrap">Bank Name</th>
-                  <th className="px-2 py-1 border-b text-nowrap">Account No</th>
+                  <th className="px-2 py-1 border-b text-nowrap">Collection Status</th>
                   <th className="px-2 py-1 border-b text-nowrap">Mandate Id</th>
                   <th className="px-2 py-1 border-b text-nowrap">Provider</th>
                   <th className="px-2 py-1 border-b text-nowrap">Amount</th>
-                  <th className="px-2 py-1 border-b text-nowrap">
-                    Pull Request Date
-                  </th>
+                  <th className="px-2 py-1 border-b text-nowrap">Collection Date</th>
+                  <th className="px-2 py-1 border-b text-nowrap">Comment</th>
+                  <th className="px-2 py-1 border-b text-nowrap">Request Created Date</th>
+                  <th className="px-2 py-1 border-b text-nowrap">Created by</th>
+                  <th className="px-2 py-1 border-b text-nowrap">Pull Amount</th>
+                  <th className="px-2 py-1 border-b text-nowrap">Message</th>
+                  <th className="px-2 py-1 border-b text-nowrap">Request Send Date/Time</th>
+                  <th className="px-2 py-1 border-b text-nowrap">Presentment Id</th>
+                  <th className="px-2 py-1 border-b text-nowrap">Presentment Date</th>
+                  <th className="px-2 py-1 border-b text-nowrap">Response Type</th>
+                  <th className="px-2 py-1 border-b text-nowrap">Transaction Ref. No.</th>
+                  <th className="px-2 py-1 border-b text-nowrap">Bank Ref. No.</th>
+                  <th className="px-2 py-1 border-b text-nowrap">Pull Status.</th>
+                  <th className="px-2 py-1 border-b text-nowrap">Bank Name</th>
+                  <th className="px-2 py-1 border-b text-nowrap">Account No</th>
+                  <th className="px-2 py-1 border-b text-nowrap">IFSC</th>
+                  <th className="px-2 py-1 border-b text-nowrap">Transaction Id</th>
+
                   {/* <th className="px-2 py-1 border-b text-nowrap">Collection Time</th> */}
-                  <th className="px-2 py-1 border-b text-nowrap">Created at</th>
-                  <th className="px-2 py-1 border-b text-nowrap">Status</th>
                 </tr>
               </thead>
 
               <tbody className="divide-y divide-gray-200 border-gray-100">
                 {pullPaymentHistoriesData?.map((elm, index) => {
                   return (
-                    <tr kay={index} className="hover:bg-gray-50 transition">
-                      <td className="px-6 py-1 text-nowrap">
+                    <tr key={index} className="hover:bg-gray-50 transition">
+                      <td className="px-6 py-1 text-nowrap capitalize">
                         {elm?.collection_status}
-                      </td>
-                      <td className="px-6 py-1 text-nowrap">
-                        {elm?.transaction_id}
-                      </td>
-                      <td className="px-6 py-1 text-nowrap">
-                        {elm?.bank_name}
-                      </td>
-                      <td className="px-6 py-1 text-nowrap">
-                        {elm?.customer_account_number}
                       </td>
                       <td className="px-6 py-1 text-nowrap">
                         {elm?.emandate_id}
                       </td>
-                      <td className="px-6 py-1 text-nowrap">{elm?.provider}</td>
+                      <td className="px-6 py-1 text-nowrap">
+                        {elm?.provider}
+                      </td>
                       <td className="px-6 py-1 text-nowrap">{elm?.amount}</td>
                       <td className="px-6 py-1 text-nowrap">
                         {elm?.collection_date}
                       </td>
-                      {/* <td className="px-6 py-1 text-nowrap">{elm?.collection_time}</td> */}
+                      <td className="px-6 py-1 text-nowrap">{elm?.comment}</td>
                       <td className="px-6 py-1 text-nowrap">
                         {elm?.request_created_date}
                       </td>
+                      <td className="px-6 py-1 text-nowrap">{elm?.request_created_by}</td>
+                      <td className="px-6 py-1 text-nowrap">{elm?.pull_amount}</td>
+                      <td className="px-6 py-1 text-nowrap">{elm?.message}</td>
+                      <td className="px-6 py-1 text-nowrap">{elm?.request_send_datetime}</td>
+                      <td className="px-6 py-1 text-nowrap">{elm?.presentment_id}</td>
                       <td className="px-6 py-1 text-nowrap">
-                        {elm?.request_is_process_status}
+                        {elm?.presentment_date}
                       </td>
+                      <td className="px-6 py-1 text-nowrap">
+                        {elm?.responce_type}
+                      </td>
+                      <td className="px-6 py-1 text-nowrap">
+                        {elm?.transaction_reference_number}
+                      </td>
+                      <td className="px-6 py-1 text-nowrap">{elm?.bank_reference_number}</td>
+                      <td className="px-6 py-1 text-nowrap">{elm?.job_pull_status}</td>
+                      <td className="px-6 py-1 text-nowrap">{elm?.bank_name}</td>
+                      <td className="px-6 py-1 text-nowrap">{elm?.customer_account_number}</td>
+                      <td className="px-6 py-1 text-nowrap">{elm?.customer_ifsc}</td>
+                      <td className="px-6 py-1 text-nowrap">{elm?.transaction_id}</td>
                     </tr>
                   );
                 })}
@@ -1683,7 +1739,7 @@ function EMISchedule({ data, loan_Id, hideincollection }) {
                       },
                       {
                         label: "Close",
-                        value: "paid",
+                        value: "close",
                       },
                     ]}
                     onChange={pullPaymentFormik.handleChange}
@@ -1705,7 +1761,7 @@ function EMISchedule({ data, loan_Id, hideincollection }) {
                     name="amount"
                     id="amount"
                     readOnly={
-                      pullPaymentFormik.values.collection_status === "paid"
+                      pullPaymentFormik.values.collection_status === "close"
                     }
                     onChange={pullPaymentFormik.handleChange}
                     onBlur={pullPaymentFormik.handleBlur}
