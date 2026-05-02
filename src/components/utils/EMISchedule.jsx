@@ -360,7 +360,7 @@ function EMISchedule({ data, loan_Id, hideincollection, fetchData }) {
       collection_status: "",
       amount: "",
       collection_date: "",
-      collection_time: "",
+      collection_time: "12:00",
       comment: "",
       request_created_date: "",
       request_is_process_status: "",
@@ -377,42 +377,42 @@ function EMISchedule({ data, loan_Id, hideincollection, fetchData }) {
           "Collection date cannot be in the past",
         )
         .required("Collection date is required"),
-      collection_time: Yup.string()
-        .required("Collection time is required")
-        .test(
-          "valid-time-window",
-          "Collection time must be between 6:00 AM and 11:59 PM",
-          function (time) {
-            if (!time) return true;
+      // collection_time: Yup.string()
+      //   .required("Collection time is required")
+      //   .test(
+      //     "valid-time-window",
+      //     "Collection time must be between 6:00 AM and 11:59 PM",
+      //     function (time) {
+      //       if (!time) return true;
 
-            const [hours, minutes] = time.split(":").map(Number);
+      //       const [hours, minutes] = time.split(":").map(Number);
 
-            // 06:00 → 23:59
-            const isAfterSixAM = hours > 6 || (hours === 6 && minutes >= 0);
+      //       // 06:00 → 23:59
+      //       const isAfterSixAM = hours > 6 || (hours === 6 && minutes >= 0);
 
-            const isBeforeMidnight =
-              hours < 24 && !(hours === 24 || hours === 0);
+      //       const isBeforeMidnight =
+      //         hours < 24 && !(hours === 24 || hours === 0);
 
-            return isAfterSixAM && isBeforeMidnight;
-          },
-        )
-        .test(
-          "future-time",
-          "Collection time cannot be in the past",
-          function (time) {
-            const { collection_date } = this.parent;
-            if (!collection_date || !time) return true;
+      //       return isAfterSixAM && isBeforeMidnight;
+      //     },
+      //   )
+      //   .test(
+      //     "future-time",
+      //     "Collection time cannot be in the past",
+      //     function (time) {
+      //       const { collection_date } = this.parent;
+      //       if (!collection_date || !time) return true;
 
-            const now = new Date();
-            const selected = new Date(collection_date);
-            const [h, m] = time.split(":");
-            selected.setHours(h, m, 0, 0);
+      //       const now = new Date();
+      //       const selected = new Date(collection_date);
+      //       const [h, m] = time.split(":");
+      //       selected.setHours(h, m, 0, 0);
 
-            return (
-              selected.toDateString() !== now.toDateString() || selected > now
-            );
-          },
-        ),
+      //       return (
+      //         selected.toDateString() !== now.toDateString() || selected > now
+      //       );
+      //     },
+      //   ),
       comment: Yup.string().notRequired(),
     }),
 
@@ -1795,7 +1795,7 @@ function EMISchedule({ data, loan_Id, hideincollection, fetchData }) {
                     )}
                 </div>
 
-                <div className="col-span-3">
+                {/* <div className="col-span-3">
                   <TimeInput
                     label="Collection Time"
                     icon="IoTimeOutline"
@@ -1815,7 +1815,7 @@ function EMISchedule({ data, loan_Id, hideincollection, fetchData }) {
                         error={pullPaymentFormik.errors.collection_time}
                       />
                     )}
-                </div>
+                </div> */}
 
                 <div className="col-span-6">
                   <TextInput
