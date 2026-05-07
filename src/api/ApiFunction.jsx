@@ -1063,3 +1063,15 @@ export const getMandateHistory = async (req) => {
         throw error;
     }
 }
+
+
+//To Fetch Cutomer Loan History
+export const getCustomerLoanHistory = async (req) => {
+    try {
+        const response = await api.post("/Admin/CustomerLoanHistory", req);
+        return response.data;
+    } catch (error) {
+        console.error("Loan History:", error.response?.data || error.message);
+        throw error;
+    }
+}

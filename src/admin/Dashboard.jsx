@@ -138,7 +138,7 @@ function Dashboard() {
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
                         {statPairs.map((pair, index) => (
                             <div key={index} className="bg-white rounded shadow border border-gray-200">
-                                <div className="bg-gradient-to-r from-primary to-blue-3Reject Profile Image00 h-3"></div>
+                                <div className="bg-gradient-to-r from-primary to-primary/60 h-3"></div>
                                 <div className="px-5 py-3">
                                     {pair.map(([key, value]) => (
                                         <div key={key} className="flex justify-between mb-2">

@@ -14,7 +14,8 @@ const Table = ({ columns, data, title, handleFilter, pagination = true, selectab
             style: {
                 // backgroundColor: "#003397",
                 // backgroundColor: "#ed502e", // orange 
-                backgroundColor: "#E76F2E",
+                // backgroundColor: "#E76F2E",
+                backgroundColor: "#3B7597d",
                 color: "white",
                 fontWeight: "bold",
             },

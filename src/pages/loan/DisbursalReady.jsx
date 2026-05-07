@@ -26,6 +26,7 @@ const DisbursalReady = () => {
   const [DisbursePage, setDisbursePage] = useState(24);
   const [userLocation, setUserLocation] = useState();
   const [leaddata, setleaddata] = useState(null);
+  const [counts, setcounts] = useState({});
   const [leadID, setleadID] = useState(null);
 
   const { adminUser } = useAuth();
@@ -241,8 +242,10 @@ const DisbursalReady = () => {
         setTableData(transformedData);
         setleaddata(response);
         setIsLoading(false);
+        setcounts(response)
       } else {
-        console.log(response.message);
+        // console.log(response.message);
+        setcounts(response)
         setTableData([]);
       }
     } catch (error) {
@@ -443,22 +446,22 @@ const DisbursalReady = () => {
     {
       id: 24,
       name: "Ready Leads",
-      count: leaddata?.total_ready_lead,
+      count: counts?.total_ready_lead,
     },
     {
       id: 25,
       name: "Approved Leads",
-      count: leaddata?.total_approved_lead,
+      count: counts?.total_approved_lead,
     },
     {
       id: 26,
       name: "Failed Leads",
-      count: leaddata?.total_failed_lead,
+      count: counts?.total_failed_lead,
     },
     {
       id: 27,
       name: "In Process",
-      count: leaddata?.total_failed_lead,
+      count: counts?.total_failed_lead,
     },
   ];
 
@@ -470,7 +473,7 @@ const DisbursalReady = () => {
       </Helmet>
 
       {/* Page Tab and Amount Section  */}
-      <div className="flex justify-between">
+      <div className="flex md:justify-between max-md:flex-col gap-5">
         <div className="flex gap-2">
           {Pages?.map((page, index) => {
             return (

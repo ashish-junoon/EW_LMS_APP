@@ -59,6 +59,7 @@ import FailurePage from "./pages/Response/FailurePage";
 import DisbursalReady from "./pages/loan/DisbursalReady";
 import LoanHistoryPage from "./pages/loan/LoanHistoryPage";
 import EditCollection from "./pages/formPage/EditCollection";
+// import CustomerLoanHistory from "./pages/formPage/CustomerLoanHistory";
 
 function App() {
   const { adminUser } = useAuth();
@@ -182,6 +183,7 @@ function App() {
 
               {/* Will Remove it After Imolementation */}
               <Route path="/manage-leads/disbursal-leads" element={<DisbursalReady />} />
+              {/* <Route path="/admin/loan-history" element={<CustomerLoanHistory />} />  */}
 
 
               {/* Dynamically generated routes based on permissions */}

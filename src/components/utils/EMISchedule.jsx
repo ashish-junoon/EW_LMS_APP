@@ -59,7 +59,10 @@ function EMISchedule({ data, loan_Id, hideincollection, fetchData }) {
   // const [isMandateAuthorized, setisMandateAuthorized] = useState(false);
   const [mandateselectedBank, setmandateselectedBank] = useState(null);
 
-  const isMandateAuthorized = historyData?.find((elm)=> elm?.mandate_id == mandateselectedBank?.mandate_id)?.status == 'authorized'
+  const isMandateAuthorized =
+    historyData?.find(
+      (elm) => elm?.mandate_id == mandateselectedBank?.mandate_id,
+    )?.status == "authorized";
   // setisMandateAuthorized(mandateData?.status == 'authorized')
 
   const [isDisbursed, setIsDisbursed] = useState(false);
@@ -307,26 +310,26 @@ function EMISchedule({ data, loan_Id, hideincollection, fetchData }) {
   };
 
   const fetchMandateHistory = async (selectedMandate) => {
-      const req = { lead_id: leadId };
-      // const req = {lead_id : "JRE6453"} // To test Only
-  
-      try {
-        // setIsLoading(true);
-        const response = await getMandateHistory(req);
-  
-        if (response.status) {
-          setHistoryData(response?.data);
+    const req = { lead_id: leadId };
+    // const req = {lead_id : "JRE6453"} // To test Only
 
-          // const mandateData = response?.data?.find((elm)=> elm.mandate_id == selectedMandate?.mandate_id)
-          // setisMandateAuthorized(mandateData?.status == 'authorized')
-        }
-      } catch (error) {
-        console.error("Error fetching data:", error);
-        toast.error("An error occurred while fetching data.");
-      } finally {
-        setIsLoading(false);
+    try {
+      // setIsLoading(true);
+      const response = await getMandateHistory(req);
+
+      if (response.status) {
+        setHistoryData(response?.data);
+
+        // const mandateData = response?.data?.find((elm)=> elm.mandate_id == selectedMandate?.mandate_id)
+        // setisMandateAuthorized(mandateData?.status == 'authorized')
       }
-    };
+    } catch (error) {
+      console.error("Error fetching data:", error);
+      toast.error("An error occurred while fetching data.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   useEffect(() => {
     if (activeLoan?.disbursed_amount) {
@@ -340,17 +343,15 @@ function EMISchedule({ data, loan_Id, hideincollection, fetchData }) {
       (el) => el.bank_name === selectedBank,
     );
 
-    setmandateselectedBank(selectedMandate)
+    setmandateselectedBank(selectedMandate);
 
     setMandateAccountDetails(selectedMandate);
     setIsEasebuzz(selectedMandate?.provider === "EASEBUZZ");
-
   }, [selectedBank, data]);
 
-  useEffect(()=> {
+  useEffect(() => {
     fetchMandateHistory();
-  },[])
-  
+  }, []);
 
   // alert(JSON.stringify(schedule, null, 2))
 
@@ -424,8 +425,8 @@ function EMISchedule({ data, loan_Id, hideincollection, fetchData }) {
           return;
         }
 
-        if(!isMandateAuthorized){
-          toast.info("Mandate is not authorized!")
+        if (!isMandateAuthorized) {
+          toast.info("Mandate is not authorized!");
           return;
         }
 
@@ -437,7 +438,7 @@ function EMISchedule({ data, loan_Id, hideincollection, fetchData }) {
       }
     },
   });
-  
+
   useEffect(() => {
     if (pullPaymentFormik.values.collection_status === "close") {
       pullPaymentFormik.setFieldValue(
@@ -544,7 +545,7 @@ function EMISchedule({ data, loan_Id, hideincollection, fetchData }) {
             // Check if status is 10 or 11 and collected amount doesn't match total outstanding
             // Status 6 is excluded from this validation
             if (parseInt(status) === 10 || parseInt(status) === 11) {
-              return parseFloat(value) === parseFloat(totalOutstanding);
+              return Math.round(value) === Math.round(totalOutstanding);
               // return parseFloat(value) === parseFloat(totalOutstanding);
             }
             return true;
@@ -555,8 +556,8 @@ function EMISchedule({ data, loan_Id, hideincollection, fetchData }) {
           "Does not match total outstanding amount",
           function (value) {
             const { status, waiveOff, collectedAmount } = this.parent;
-            const collected = parseFloat(collectedAmount || 0);
-            const waived = parseFloat(waiveOff || 0);
+            const collected = Math.round(collectedAmount || 0);
+            const waived = Math.round(waiveOff || 0);
 
             // Only validate if status is provided and not 10, 11, or 6
             // Status 6 is excluded from total outstanding validation
@@ -565,10 +566,13 @@ function EMISchedule({ data, loan_Id, hideincollection, fetchData }) {
               parseInt(status) !== 10 &&
               parseInt(status) !== 11 &&
               parseInt(status) !== 6 &&
-              // parseInt(status) !== 12 &&
+              // parseInt(status) !== 12 && //Changed 23-03-2026
               parseInt(status) !== 13
             ) {
-              return collected + waived === parseFloat(totalOutstanding);
+              // return collected + waived === parseFloat(totalOutstanding);
+              return (
+                Math.round(collected + waived) === Math.round(totalOutstanding)
+              );
             }
             return true;
           },
@@ -579,8 +583,8 @@ function EMISchedule({ data, loan_Id, hideincollection, fetchData }) {
           "Amount cannot exceed current due amount",
           function (value) {
             const { status } = this.parent;
-            const collected = parseFloat(value || 0);
-            const dueToday = parseFloat(totalOutstanding || 0);
+            const collected = Math.round(value || 0);
+            const dueToday = Math.round(totalOutstanding || 0);
 
             if (
               parseInt(status) === 6 ||
@@ -628,8 +632,8 @@ function EMISchedule({ data, loan_Id, hideincollection, fetchData }) {
           "Does not match total outstanding amount",
           function (value) {
             const { status, collectedAmount } = this.parent;
-            const collected = parseFloat(collectedAmount || 0);
-            const waived = parseFloat(value || 0);
+            const collected = Math.round(collectedAmount || 0);
+            const waived = Math.round(value || 0);
 
             // Only validate if status is provided and not 10, 11, or 6
             // Status 6 is excluded from total outstanding validation
@@ -639,7 +643,9 @@ function EMISchedule({ data, loan_Id, hideincollection, fetchData }) {
               parseInt(status) !== 11 &&
               parseInt(status) !== 6
             ) {
-              return collected + waived === parseFloat(totalOutstanding);
+              return (
+                Math.round(collected + waived) === Math.round(totalOutstanding)
+              );
             }
             return true;
           },
@@ -662,10 +668,10 @@ function EMISchedule({ data, loan_Id, hideincollection, fetchData }) {
         const req = {
           lead_id: leadId,
           user_id: data?.user_id,
+          loan_id: loanId,
           company_id: import.meta.env.VITE_COMPANY_ID,
           product_name: import.meta.env.VITE_PRODUCT_NAME,
-          loan_id: loanId,
-          collection_amount: Math.floor(Number(values.collectedAmount)),
+          collection_amount: Math.round(Number(values.collectedAmount)),
           payment_mode: values.collectionMode,
           transction_id: values.transactionId,
           collection_date: values.collectionDate,
@@ -786,7 +792,7 @@ function EMISchedule({ data, loan_Id, hideincollection, fetchData }) {
           navigate("/manage-loans/accounts");
         }, 5000);
         pullPaymentFormik.resetForm();
-        fetchData()
+        fetchData();
       } else {
         toast.info(response.message);
       }
@@ -963,8 +969,8 @@ function EMISchedule({ data, loan_Id, hideincollection, fetchData }) {
     if (UpdatePayment.values.status === "10") {
       UpdatePayment.setFieldValue(
         "collectedAmount",
-        updateEMI.due_amount_on_current_day ||
-          activeLoan.due_amount_on_current_day,
+        Math.round(updateEMI.due_amount_on_current_day) ||
+          Math.round(activeLoan.due_amount_on_current_day),
       );
     } else {
       UpdatePayment.setFieldValue("collectedAmount", "");
@@ -1181,8 +1187,8 @@ function EMISchedule({ data, loan_Id, hideincollection, fetchData }) {
                 ₹
                 {updateEMI.due_amount_on_current_day &&
                 updateEMI.due_amount_on_current_day
-                  ? updateEMI.due_amount_on_current_day
-                  : activeLoan?.due_amount_on_current_day}
+                  ? Math.round(updateEMI.due_amount_on_current_day)
+                  : Math.round(activeLoan?.due_amount_on_current_day)}
               </p>
             </div>
 
@@ -1194,8 +1200,8 @@ function EMISchedule({ data, loan_Id, hideincollection, fetchData }) {
                 ₹
                 {updateEMI.due_interest_on_current_day &&
                 updateEMI.due_interest_on_current_day
-                  ? updateEMI.due_interest_on_current_day
-                  : activeLoan?.due_interest_on_current_day}
+                  ? Math.round(updateEMI.due_interest_on_current_day)
+                  : Math.round(activeLoan?.due_interest_on_current_day)}
               </p>
             </div>
 
@@ -1206,8 +1212,8 @@ function EMISchedule({ data, loan_Id, hideincollection, fetchData }) {
               <p className="md:text-lg text-gray-800 font-bold">
                 ₹
                 {updateEMI.penal_charges && updateEMI.penal_charges
-                  ? updateEMI.penal_charges
-                  : activeLoan?.penal_charges}
+                  ? Math.round(updateEMI.penal_charges)
+                  : Math.round(activeLoan?.penal_charges)}
               </p>
             </div>
           </div>
@@ -1221,8 +1227,7 @@ function EMISchedule({ data, loan_Id, hideincollection, fetchData }) {
                   name="collectionDate"
                   id="collectionDate"
                   min={getMinDate(role, emp_code)}
-                  // max={new Date().toISOString().split("T")[0]}
-                  max={new Date().toLocaleDateString("en-CA")}
+                  max={new Date().toISOString().split("T")[0]}
                   // onChange={UpdatePayment.handleChange}
                   onChange={(e) => {
                     UpdatePayment.handleChange(e); // Formik function
@@ -1531,27 +1536,51 @@ function EMISchedule({ data, loan_Id, hideincollection, fetchData }) {
             <table className="min-w-full text-sm text-left border border-gray-500 rounded-md overflow-hidden shadow-sm text-center">
               <thead className="bg-gray-100 text-gray-700 uppercase text-xs tracking-wider">
                 <tr>
-                  <th className="px-2 py-1 border-b text-nowrap">Collection Status</th>
+                  <th className="px-2 py-1 border-b text-nowrap">
+                    Collection Status
+                  </th>
                   <th className="px-2 py-1 border-b text-nowrap">Mandate Id</th>
                   <th className="px-2 py-1 border-b text-nowrap">Provider</th>
                   <th className="px-2 py-1 border-b text-nowrap">Amount</th>
-                  <th className="px-2 py-1 border-b text-nowrap">Collection Date</th>
+                  <th className="px-2 py-1 border-b text-nowrap">
+                    Collection Date
+                  </th>
                   <th className="px-2 py-1 border-b text-nowrap">Comment</th>
-                  <th className="px-2 py-1 border-b text-nowrap">Request Created Date</th>
+                  <th className="px-2 py-1 border-b text-nowrap">
+                    Request Created Date
+                  </th>
                   <th className="px-2 py-1 border-b text-nowrap">Created by</th>
-                  <th className="px-2 py-1 border-b text-nowrap">Pull Amount</th>
+                  <th className="px-2 py-1 border-b text-nowrap">
+                    Pull Amount
+                  </th>
                   <th className="px-2 py-1 border-b text-nowrap">Message</th>
-                  <th className="px-2 py-1 border-b text-nowrap">Request Send Date/Time</th>
-                  <th className="px-2 py-1 border-b text-nowrap">Presentment Id</th>
-                  <th className="px-2 py-1 border-b text-nowrap">Presentment Date</th>
-                  <th className="px-2 py-1 border-b text-nowrap">Response Type</th>
-                  <th className="px-2 py-1 border-b text-nowrap">Transaction Ref. No.</th>
-                  <th className="px-2 py-1 border-b text-nowrap">Bank Ref. No.</th>
-                  <th className="px-2 py-1 border-b text-nowrap">Pull Status.</th>
+                  <th className="px-2 py-1 border-b text-nowrap">
+                    Request Send Date/Time
+                  </th>
+                  <th className="px-2 py-1 border-b text-nowrap">
+                    Presentment Id
+                  </th>
+                  <th className="px-2 py-1 border-b text-nowrap">
+                    Presentment Date
+                  </th>
+                  <th className="px-2 py-1 border-b text-nowrap">
+                    Response Type
+                  </th>
+                  <th className="px-2 py-1 border-b text-nowrap">
+                    Transaction Ref. No.
+                  </th>
+                  <th className="px-2 py-1 border-b text-nowrap">
+                    Bank Ref. No.
+                  </th>
+                  <th className="px-2 py-1 border-b text-nowrap">
+                    Pull Status.
+                  </th>
                   <th className="px-2 py-1 border-b text-nowrap">Bank Name</th>
                   <th className="px-2 py-1 border-b text-nowrap">Account No</th>
                   <th className="px-2 py-1 border-b text-nowrap">IFSC</th>
-                  <th className="px-2 py-1 border-b text-nowrap">Transaction Id</th>
+                  <th className="px-2 py-1 border-b text-nowrap">
+                    Transaction Id
+                  </th>
 
                   {/* <th className="px-2 py-1 border-b text-nowrap">Collection Time</th> */}
                 </tr>
@@ -1567,9 +1596,7 @@ function EMISchedule({ data, loan_Id, hideincollection, fetchData }) {
                       <td className="px-6 py-1 text-nowrap">
                         {elm?.emandate_id}
                       </td>
-                      <td className="px-6 py-1 text-nowrap">
-                        {elm?.provider}
-                      </td>
+                      <td className="px-6 py-1 text-nowrap">{elm?.provider}</td>
                       <td className="px-6 py-1 text-nowrap">{elm?.amount}</td>
                       <td className="px-6 py-1 text-nowrap">
                         {elm?.collection_date}
@@ -1578,11 +1605,19 @@ function EMISchedule({ data, loan_Id, hideincollection, fetchData }) {
                       <td className="px-6 py-1 text-nowrap">
                         {elm?.request_created_date}
                       </td>
-                      <td className="px-6 py-1 text-nowrap">{elm?.request_created_by}</td>
-                      <td className="px-6 py-1 text-nowrap">{elm?.pull_amount}</td>
+                      <td className="px-6 py-1 text-nowrap">
+                        {elm?.request_created_by}
+                      </td>
+                      <td className="px-6 py-1 text-nowrap">
+                        {elm?.pull_amount}
+                      </td>
                       <td className="px-6 py-1 text-nowrap">{elm?.message}</td>
-                      <td className="px-6 py-1 text-nowrap">{elm?.request_send_datetime}</td>
-                      <td className="px-6 py-1 text-nowrap">{elm?.presentment_id}</td>
+                      <td className="px-6 py-1 text-nowrap">
+                        {elm?.request_send_datetime}
+                      </td>
+                      <td className="px-6 py-1 text-nowrap">
+                        {elm?.presentment_id}
+                      </td>
                       <td className="px-6 py-1 text-nowrap">
                         {elm?.presentment_date}
                       </td>
@@ -1592,12 +1627,24 @@ function EMISchedule({ data, loan_Id, hideincollection, fetchData }) {
                       <td className="px-6 py-1 text-nowrap">
                         {elm?.transaction_reference_number}
                       </td>
-                      <td className="px-6 py-1 text-nowrap">{elm?.bank_reference_number}</td>
-                      <td className="px-6 py-1 text-nowrap">{elm?.job_pull_status}</td>
-                      <td className="px-6 py-1 text-nowrap">{elm?.bank_name}</td>
-                      <td className="px-6 py-1 text-nowrap">{elm?.customer_account_number}</td>
-                      <td className="px-6 py-1 text-nowrap">{elm?.customer_ifsc}</td>
-                      <td className="px-6 py-1 text-nowrap">{elm?.transaction_id}</td>
+                      <td className="px-6 py-1 text-nowrap">
+                        {elm?.bank_reference_number}
+                      </td>
+                      <td className="px-6 py-1 text-nowrap">
+                        {elm?.job_pull_status}
+                      </td>
+                      <td className="px-6 py-1 text-nowrap">
+                        {elm?.bank_name}
+                      </td>
+                      <td className="px-6 py-1 text-nowrap">
+                        {elm?.customer_account_number}
+                      </td>
+                      <td className="px-6 py-1 text-nowrap">
+                        {elm?.customer_ifsc}
+                      </td>
+                      <td className="px-6 py-1 text-nowrap">
+                        {elm?.transaction_id}
+                      </td>
                     </tr>
                   );
                 })}

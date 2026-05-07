@@ -84,7 +84,7 @@ function ManageURL() {
                 <div className="grid md:grid-cols-2 gap-5">
                     <div className="flex flex-col justify-start">
                         <h1 className="text-lg font-bold text-black">Manage Page URL</h1>
-                        <p className="text-xs font-light text-secondary">Manage Add & Modify URLs</p>
+                        <p className="text-xs font-light text-primary">Manage Add & Modify URLs</p>
                     </div>
                     <div className="flex justify-end py-2 gap-5">
                         {permission && (

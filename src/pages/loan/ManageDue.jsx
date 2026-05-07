@@ -268,7 +268,7 @@ const ManageDue = () => {
                                             <p className="text-sm text-muted-foreground">Disbursement Date</p>
                                             <p className="flex items-center gap-1">
                                                 <Icon name="IoCalendarOutline" size={16} />
-                                                {dayjs(selectedIds?.disbursement_date).format('DD-MM-YYYY')}
+                                                {selectedIds?.disbursement_date}
                                             </p>
                                         </div>
                                     </div>
@@ -289,7 +289,8 @@ const ManageDue = () => {
                                             <p className="text-sm text-muted-foreground">Collection Date</p>
                                             <p className="flex items-center gap-1">
                                                 <Icon name="IoCalendarOutline" size={16} />
-                                                {dayjs(selectedIds?.collection_date).format('DD-MM-YYYY')}
+                                                {/* {dayjs(selectedIds?.collection_date).format('DD-MM-YYYY')} */}
+                                                {selectedIds?.collection_date}
                                             </p>
                                         </div>
                                         <div>

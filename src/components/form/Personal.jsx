@@ -40,17 +40,16 @@ const PersonalInfo = ({ btnEnable = false, incomplete }) => {
 
   //Block Dae for 18 Year
   const getMaxDate = () => {
-  const today = new Date();
-  today.setFullYear(today.getFullYear() - 18);
-  return today.toISOString().split("T")[0];
-};
+    const today = new Date();
+    today.setFullYear(today.getFullYear() - 18);
+    return today.toISOString().split("T")[0];
+  };
 
-const getMinDate = () => {
+  const getMinDate = () => {
     const today = new Date();
     today.setFullYear(today.getFullYear() - 60);
     return today.toISOString().split("T")[0];
   };
-
 
   const formik = useFormik({
     initialValues: {
@@ -69,12 +68,22 @@ const getMinDate = () => {
         .required("Required"),
       userGender: Yup.string().required("Required"),
       maritalStatus: Yup.string().required("Required"),
+      // dob: Yup.string()
+      //   .required("Required")
+      //   .test("age", "Age must be between 18 and 55 years", function (value) {
+      //     if (!value) return false;
+      //     // const birthDate = moment(value, "YYYY-MM-DD");
+      //     const birthDate = moment(value, "DD-MM-YYYY");
+      //     if (!birthDate.isValid()) return false;
+      //     const today = moment();
+      //     const ageInYears = today.diff(birthDate, "years");
+      //     return ageInYears >= 18 && ageInYears <= 55;
+      //   }),
       dob: Yup.string()
         .required("Required")
         .test("age", "Age must be between 18 and 55 years", function (value) {
           if (!value) return false;
-          // const birthDate = moment(value, "YYYY-MM-DD");
-          const birthDate = moment(value, "DD-MM-YYYY");
+          const birthDate = moment(value, ["YYYY-MM-DD", "DD-MM-YYYY"], true);
           if (!birthDate.isValid()) return false;
           const today = moment();
           const ageInYears = today.diff(birthDate, "years");
@@ -231,6 +240,9 @@ const getMinDate = () => {
     return <Loader />;
   }
 
+  // console.log(formik.errors);
+  // console.log(formik.values.dob);
+
   return (
     <Accordion
       title="Personal Details"
@@ -238,8 +250,8 @@ const getMinDate = () => {
         isEditing
           ? "Cancel"
           : leadStatus === 1
-          ? "Edit Personal Info"
-          : "Update & Verify"
+            ? "Edit Personal Info"
+            : "Update & Verify"
       }
       verified={leadInfo?.personal_info_verified}
       reset={leadInfo?.personal_info_fill}
@@ -265,8 +277,8 @@ const getMinDate = () => {
                 icon: isEditing
                   ? "IoClose"
                   : leadStatus === 1
-                  ? "RiEdit2Fill"
-                  : "MdOutlineCheckCircle",
+                    ? "RiEdit2Fill"
+                    : "MdOutlineCheckCircle",
                 onClick: handleEdit,
                 className: isEditing
                   ? "border border-danger text-danger hover:bg-danger hover:border-danger hover:text-white"

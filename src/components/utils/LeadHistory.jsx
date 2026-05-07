@@ -51,14 +51,15 @@ function LeadHistory({ data, btnEnable = false }) {
                 const response = await addRemark(req);
                 if (response.status) {
                     // Update both the local table data and the context data
+                    const { lead_id, ...restReq } = req;
                     const updatedRemark = {
                         lead_status: "Remarks Added",
-                        is_approve: "Added",
-                        ...req,
+                        is_approve: "true",
+                        ...restReq,
                         process_on: new Date().toISOString()
                     };
 
-                    setLocalTableData(prev => [...prev, updatedRemark]);
+                    setLocalTableData(prev => [updatedRemark, ...prev]);
 
                     setLeadInfo((prev) => ({
                         ...prev,
