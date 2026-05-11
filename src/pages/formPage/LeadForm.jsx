@@ -28,6 +28,7 @@ import { useOpenLeadContext } from '../../context/OpenLeadContext';
 import { Helmet } from 'react-helmet';
 import LoginPageFinder from '../../components/utils/LoginPageFinder';
 import LoanHistory from '../../components/utils/LoanHistory';
+import CustomerLoanHistory from '../../components/utils/CustomerLoanHistory';
 
 const LeadForm = () => {
     const location = useLocation();

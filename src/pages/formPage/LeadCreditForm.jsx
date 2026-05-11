@@ -89,7 +89,6 @@ const LeadCreditForm = () => {
       content: (
         <div className="">
           <div className="border-b border-gray-100 py-2">
-            {/* <GetScore btnEnable={isOnHold} /> */}
             <CustomerLoanHistory data={userData} />
           </div>
 
