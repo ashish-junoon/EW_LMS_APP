@@ -7,6 +7,7 @@ import { useAuth } from "../../context/AuthContext";
 import Icon from "../utils/Icon";
 import { Button } from "@headlessui/react";
 import BackButton from "../utils/BackButton";
+import LoginPageFinder from "../utils/LoginPageFinder";
 
 const dropdownVariants = {
   hidden: {
@@ -165,6 +166,13 @@ function Sidebar({ children }) {
     setActivePath(location.pathname);
   }, [location.pathname]);
 
+  const isSidebarVisible = location.pathname === "/admin/loan-history"
+    const pageAccess = LoginPageFinder("page_display_name", "loan history");
+  const permission = pageAccess?.[0]?.read_write_permission;
+
+  console.log("dddd",isSidebarVisible);
+  
+
   useEffect(() => {
     const handleResize = () => {
       if (window.innerWidth <= 767) {
@@ -188,6 +196,7 @@ function Sidebar({ children }) {
       <Navbar isOpen={isOpen} toggleSidebar={() => setIsOpen(!isOpen)} />
 
       <div className="flex">
+        {(!isSidebarVisible || permission) &&
         <motion.div
           initial={{ width: isOpen || isHovered ? "250px" : "0px" }}
           animate={{ width: isHovered || isOpen ? "250px" : "0px" }}
@@ -260,12 +269,13 @@ function Sidebar({ children }) {
             )}
           </motion.section>
         </motion.div>
+        }
         <motion.main
           className={`overflow-hidden py-8 px-10 max-md:px-2 ${
             isHovered || isOpen ? "ml-[250px]" : "ml-[0px]"
           } w-full transition-all duration-300`}
         >
-          <BackButton />
+          {(!isSidebarVisible || permission) && <BackButton />}
           {children}
         </motion.main>
       </div>
