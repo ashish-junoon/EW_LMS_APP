@@ -187,7 +187,7 @@ const PagePermission = () => {
             {Array.isArray(tableData) && tableData.length > 0 ? (
                 <div className='flex justify-center items-center'>
                     <div className='w-full xl:w-10/12 mt-8'>
-                        <Table columns={columnsData} data={tableData} title="Page Permission" />
+                        <Table columns={columnsData} data={tableData} title="Page Permission" pagination={false} />
 
                         <div className='flex justify-center items-center py-5'>
                             {permission && (

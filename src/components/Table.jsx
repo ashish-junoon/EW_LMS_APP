@@ -5,7 +5,7 @@ import Icon from "./utils/Icon";
 import Button from "./utils/Button";
 import Tooltip from "./utils/Tooltip";
 
-const Table = ({ columns, data, title, handleFilter, pagination = true, selectableRows = false, onRowClicked, exportable = false, csvData, filename }) => {
+const Table = ({ columns, data, title, handleFilter, pagination = true, selectableRows = false, onRowClicked, exportable = false, csvData, filename, paginationPerPage }) => {
     const [filterText, setFilterText] = useState("");
 
     // Custom styles for the table
@@ -15,7 +15,7 @@ const Table = ({ columns, data, title, handleFilter, pagination = true, selectab
                 // backgroundColor: "#003397",
                 // backgroundColor: "#ed502e", // orange 
                 // backgroundColor: "#E76F2E",
-                backgroundColor: "#3B7597d",
+                backgroundColor: "#3B7597",
                 color: "white",
                 fontWeight: "bold",
             },

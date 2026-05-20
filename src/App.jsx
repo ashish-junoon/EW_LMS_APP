@@ -59,7 +59,15 @@ import FailurePage from "./pages/Response/FailurePage";
 import DisbursalReady from "./pages/loan/DisbursalReady";
 import LoanHistoryPage from "./pages/loan/LoanHistoryPage";
 import EditCollection from "./pages/formPage/EditCollection";
-// import CustomerLoanHistory from "./pages/formPage/CustomerLoanHistory";
+import DisbursementCollectionReportV1 from "./pages/Reports/DisbursementCollectionReportV1";
+import DemandReport from "./pages/Reports/DemandReport";
+import CollectionReport from "./pages/Reports/CollectionReport";
+import MandateResisterReport from "./pages/Reports/MandateRegisterReport";
+import DemandvsCollectionReport from "./pages/Reports/DemandvsCollectionReport";
+import EnachTransactionReport from "./pages/Reports/EnachTransectionReport";
+import MasterSheetReport from "./pages/Reports/MasterSheetReport";
+import Dashboardv2 from "./admin/Dashboardv2";
+import CustomerLoanHistory from "./pages/formPage/CustomerLoanHistory";
 
 function App() {
   const { adminUser } = useAuth();
@@ -70,7 +78,8 @@ function App() {
   const routeComponents = {
 
     //  Menu URL Components
-    "/": Dashboard,
+    // "/": Dashboard,
+    "/": Dashboardv2,
 
     //Manage Leads
     "/manage-leads/incomplete-leads": IncompleteLead,
@@ -79,7 +88,7 @@ function App() {
     "/manage-leads/credit-assessment": CreditAssmnt,
     "/manage-leads/leads-in-kyc": LeadsKYC,
     "/manage-leads/manage-disbursal": ManageDisbursal,
-    // "/manage-leads/disbursal-leads": DisbursalReady,
+    "/manage-leads/disbursal-leads": DisbursalReady,
     "/manage-leads/rejected-leads": ManageApp,
     "/reports/generate-report": Reports,
     // "/reports/dynamic-report": DynamicReporting,
@@ -99,6 +108,16 @@ function App() {
     "/admin/manage-designation": ManageDesignation,
     "/admin/manage-branch": ManageBranch,
     "/admin/verify-otp": VerifyOtp,
+
+    //Reports Section
+    "/report-section/disbursement-report" : DisbursementCollectionReportV1,
+    "/report-section/demand-report" : DemandReport,
+    "/report-section/collection-report" : CollectionReport,
+    "/report-section/manadate-register" : MandateResisterReport,
+    "/report-section/demand-vs-collection" : DemandvsCollectionReport,
+    "/report-section/enach-transactions" : EnachTransactionReport,
+    "/report-section/mastersheet-report" : MasterSheetReport,
+
     
 
 
@@ -143,7 +162,6 @@ function App() {
               <Route path="/incomplete-leads" element={<IncompleteLead />} />
 
               <Route path="/new-lead/lead-details" element={<LeadForm />} />
-              {/* <Route path="/manage-leads/disbursal-leads" element={<LeadForm />} /> */}
               <Route path="/lead/leads-incomplete" element={<IncompleteLeadForm />} />
               <Route path="/lead/lead-verify" element={<LeadQCForm />} />
               <Route path="/lead/assessment-details" element={<LeadCreditForm />} />
@@ -182,8 +200,8 @@ function App() {
               {/* <Route path="/users/user-view" element={<Users />} /> */}
 
               {/* Will Remove it After Imolementation */}
-              <Route path="/manage-leads/disbursal-leads" element={<DisbursalReady />} />
-              {/* <Route path="/admin/loan-history" element={<CustomerLoanHistory />} />  */}
+              {/* <Route path="/manage-leads/disbursal-leads" element={<DisbursalReady />} /> */}
+              <Route path="/admin/loan-history" element={<CustomerLoanHistory />} /> 
 
 
               {/* Dynamically generated routes based on permissions */}

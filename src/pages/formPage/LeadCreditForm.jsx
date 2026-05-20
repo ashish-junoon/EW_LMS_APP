@@ -25,7 +25,6 @@ import LoanHistory from "../../components/utils/LoanHistory";
 import Button from "../../components/utils/Button";
 import AddBank from "../../components/form/AddBank";
 import OtherBankInfo from "../../components/form/OtherBankInfo";
-import CustomerLoanHistory from "../../components/utils/CustomerLoanHistory";
 
 const LeadCreditForm = () => {
   const location = useLocation();
@@ -88,10 +87,6 @@ const LeadCreditForm = () => {
       label: "Credit Assessment",
       content: (
         <div className="">
-          <div className="border-b border-gray-100 py-2">
-            <CustomerLoanHistory data={userData} />
-          </div>
-
           <div className="border-b border-gray-900 py-5">
             <GetScore btnEnable={isOnHold} />
           </div>
