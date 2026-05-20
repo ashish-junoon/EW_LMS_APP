@@ -75,7 +75,7 @@ const CustomerLoanHistory = () => {
           sessionStorage.removeItem("customerId");
         }
       } else {
-        toast.error(response.message);
+        toast.info((response.message == "Data not found") ? "Loan history is not available for PU and EW!" : response.message);
         setLoanHistoryData([]);
       }
     } catch (error) {

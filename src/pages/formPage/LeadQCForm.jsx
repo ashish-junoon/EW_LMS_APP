@@ -16,7 +16,11 @@ import SelectInput from "../../components/fields/SelectInput";
 import TabWrap from "../../components/utils/TabWrap";
 import { rejectLead } from "../../components/content/Data";
 import TextInput from "../../components/fields/TextInput";
-import { getCustomerLoanHistory, getLeadDetails, UpdateUserLead } from "../../api/ApiFunction";
+import {
+  getCustomerLoanHistory,
+  getLeadDetails,
+  UpdateUserLead,
+} from "../../api/ApiFunction";
 import Modal from "../../components/utils/Modal";
 import Button from "../../components/utils/Button";
 import ErrorMsg from "../../components/utils/ErrorMsg";
@@ -169,7 +173,12 @@ const LeadQCForm = () => {
         window.open(url, "_blank");
         sessionStorage.removeItem("customerId");
       } else {
-        toast.error(response.message || "Data not found.");
+        toast.info(
+          response.message == "Data not found"
+            ? "Loan history is not available for PU and EW!"
+            : response.message ||
+                "Loan history is not available for PU and EW!",
+        );
       }
     } catch (error) {
       console.error("Error fetching data:", error);
@@ -181,7 +190,7 @@ const LeadQCForm = () => {
 
   const handleShowHistory = () => {
     const PAN = leadInfo?.kycInfo[0]?.pan_card_number;
-    fetchLoanData({customerId: PAN})
+    fetchLoanData({ customerId: PAN });
   };
 
   if (isLoading) {
