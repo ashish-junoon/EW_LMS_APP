@@ -180,6 +180,7 @@ const houseTypeOptions = [
 const scorePlatform = [
     { label: "Transunion", value: "Transunion" },
     { label: "Experian", value: "Experian" },
+    { label: "Crif", value: "Crif" },
     // { label: "Equifax", value: "Equifax" },
 ]
 

@@ -43,7 +43,7 @@ function Dropdown({
   setActivePath,
   openDropdowns,
   toggleDropdown,
-  setIsOpen
+  setIsOpen,
 }) {
   const navigate = useNavigate();
 
@@ -51,10 +51,10 @@ function Dropdown({
     setActivePath(path);
     navigate(path);
 
-     if (window.innerWidth <= 767) {
+    if (window.innerWidth <= 767) {
       setIsOpen(false);
-    }else{
-      setIsOpen(true)
+    } else {
+      setIsOpen(true);
     }
   };
 
@@ -154,7 +154,7 @@ function Sidebar({ children }) {
   const handleMouseLeave = () => setIsHovered(false);
   const handleClick = (path) => {
     setActivePath(path);
-    navigate(path);    
+    navigate(path);
   };
   const toggleDropdown = (newOpenDropdowns) =>
     setOpenDropdowns(newOpenDropdowns);
@@ -166,12 +166,9 @@ function Sidebar({ children }) {
     setActivePath(location.pathname);
   }, [location.pathname]);
 
-  const isSidebarVisible = location.pathname === "/admin/loan-history"
-    const pageAccess = LoginPageFinder("page_display_name", "loan history");
+  const isSidebarVisible = location.pathname === "/admin/loan-history";
+  const pageAccess = LoginPageFinder("page_display_name", "loan history");
   const permission = pageAccess?.[0]?.read_write_permission;
-
-  console.log("dddd",isSidebarVisible);
-  
 
   useEffect(() => {
     const handleResize = () => {
@@ -196,80 +193,84 @@ function Sidebar({ children }) {
       <Navbar isOpen={isOpen} toggleSidebar={() => setIsOpen(!isOpen)} />
 
       <div className="flex">
-        {(!isSidebarVisible || permission) &&
-        <motion.div
-          initial={{ width: isOpen || isHovered ? "250px" : "0px" }}
-          animate={{ width: isHovered || isOpen ? "250px" : "0px" }}
-          transition={{ ease: "easeIn", duration: 0.2 }}
-          className={`min-h-[calc(100vh-40px)] overflow-y-auto bg-white p-4 mt-4 shadow-lg fixed left-0 top-[40px] bottom-0 ${isOpen ? "" : "hidden"}`}
-          onMouseEnter={handleMouseEnter}
-          onMouseLeave={handleMouseLeave}
-        >
-          <motion.section>
-            <div
-              className={`group flex items-center px-2 py-[5px] my-2 whitespace-nowrap rounded-md cursor-pointer hover:bg-primary`}
-              onClick={() => {navigate("/"), setIsOpen(!(window.innerWidth <= 767))}}
-            >
-              <div className="group flex items-center">
-                <div className="mr-4 text-primary group-hover:text-white">
-                  <Icon
-                    name="RiDashboardLine"
-                    size={20}
-                    className="text-inherit"
-                  />
-                </div>
-                <div
-                  className={`${
-                    !isOpen && "hidden"
-                  } text-sm text-black group-hover:text-white`}
-                >
-                  Dashboard
+        {(!isSidebarVisible || permission) && (
+          <motion.div
+            initial={{ width: isOpen || isHovered ? "250px" : "0px" }}
+            animate={{ width: isHovered || isOpen ? "250px" : "0px" }}
+            transition={{ ease: "easeIn", duration: 0.2 }}
+            className={`min-h-[calc(100vh-40px)] overflow-y-auto bg-white p-4 mt-4 shadow-lg fixed left-0 top-[40px] bottom-0 ${isOpen ? "" : "hidden"}`}
+            onMouseEnter={handleMouseEnter}
+            onMouseLeave={handleMouseLeave}
+          >
+            <motion.section>
+              <div
+                className={`group flex items-center px-2 py-[5px] my-2 whitespace-nowrap rounded-md cursor-pointer hover:bg-primary`}
+                onClick={() => {
+                  (navigate("/"), setIsOpen(!(window.innerWidth <= 767)));
+                }}
+              >
+                <div className="group flex items-center">
+                  <div className="mr-4 text-primary group-hover:text-white">
+                    <Icon
+                      name="RiDashboardLine"
+                      size={20}
+                      className="text-inherit"
+                    />
+                  </div>
+                  <div
+                    className={`${
+                      !isOpen && "hidden"
+                    } text-sm text-black group-hover:text-white`}
+                  >
+                    Dashboard
+                  </div>
                 </div>
               </div>
-            </div>
 
-            {menuItems.map((route, index) =>
-              route.menuItems ? (
-                <Dropdown
-                  key={index}
-                  route={{ ...route, index }}
-                  isOpen={isHovered || isOpen}
-                  activePath={activePath}
-                  setActivePath={setActivePath}
-                  openDropdowns={openDropdowns}
-                  toggleDropdown={toggleDropdown}
-                  setIsOpen={setIsOpen}
-                />
-              ) : (
-                <div
-                  key={index}
-                  className={`group flex items-center px-2 py-[5px] my-2 whitespace-nowrap rounded-md cursor-pointer hover:bg-primary ${
-                    activePath === route.path
-                      ? "text-white bg-primary"
-                      : "text-primary"
-                  }`}
-                  onClick={() => handleClick(route.path)}
-                >
+              {menuItems.map((route, index) =>
+                route.menuItems ? (
+                  <Dropdown
+                    key={index}
+                    route={{ ...route, index }}
+                    isOpen={isHovered || isOpen}
+                    activePath={activePath}
+                    setActivePath={setActivePath}
+                    openDropdowns={openDropdowns}
+                    toggleDropdown={toggleDropdown}
+                    setIsOpen={setIsOpen}
+                  />
+                ) : (
                   <div
-                    className={`mr-4 ${
-                      activePath === route.path ? "text-white" : "text-primary"
-                    } group-hover:text-white`}
+                    key={index}
+                    className={`group flex items-center px-2 py-[5px] my-2 whitespace-nowrap rounded-md cursor-pointer hover:bg-primary ${
+                      activePath === route.path
+                        ? "text-white bg-primary"
+                        : "text-primary"
+                    }`}
+                    onClick={() => handleClick(route.path)}
                   >
-                    {route.icon}
+                    <div
+                      className={`mr-4 ${
+                        activePath === route.path
+                          ? "text-white"
+                          : "text-primary"
+                      } group-hover:text-white`}
+                    >
+                      {route.icon}
+                    </div>
+                    <div
+                      className={`text-sm ${!(isHovered || isOpen) && "hidden"} ${
+                        activePath === route.path ? "text-white" : "text-black"
+                      } group-hover:text-white`}
+                    >
+                      {route.name}
+                    </div>
                   </div>
-                  <div
-                    className={`text-sm ${!(isHovered || isOpen) && "hidden"} ${
-                      activePath === route.path ? "text-white" : "text-black"
-                    } group-hover:text-white`}
-                  >
-                    {route.name}
-                  </div>
-                </div>
-              ),
-            )}
-          </motion.section>
-        </motion.div>
-        }
+                ),
+              )}
+            </motion.section>
+          </motion.div>
+        )}
         <motion.main
           className={`overflow-hidden py-8 px-10 max-md:px-2 ${
             isHovered || isOpen ? "ml-[250px]" : "ml-[0px]"

@@ -8,6 +8,7 @@ import {
   ScoreFromExperian,
   ScoreFromEquiFax,
   UploadCreditReport,
+  ScoreFromCrif,
 } from "../../api/ApiFunction";
 import Loader from "./Loader";
 import SelectInput from "../fields/SelectInput";
@@ -58,6 +59,8 @@ const GetScore = ({ btnEnable = false }) => {
         getExperianScore();
       } else if (values.platform === "Transunion") {
         getTransUnionScore();
+      }else if(values.platform === "Crif"){
+        getCrifScore()
       }
     },
   });
@@ -232,7 +235,50 @@ const GetScore = ({ btnEnable = false }) => {
     }
   };
 
-  // finding Statecodelist 
+  const getCrifScore = async () => {
+    setLoading(true);
+
+    const req = {
+      user_id: leadInfo?.user_id,
+      lead_id: leadInfo?.lead_id,
+      company_id: import.meta.env.VITE_COMPANY_ID,
+      productName: import.meta.env.VITE_PRODUCT_NAME,
+      first_name: firstN,
+      last_name: secondN,
+      uid_number: leadInfo?.kycInfo[0].pan_card_number,
+      mobile_number: leadInfo?.mobile_number,
+    };
+
+    try {
+      const response = await ScoreFromCrif(req);
+      if (response.Status === "true") {
+        setLeadInfo((prev) => ({
+          ...prev,
+          cibilCreditScores: [
+            {
+              name: response.Data.name,
+              mobile: response.Data.mobile,
+              pan_number: response.Data.pan,
+              credit_score: response.Data.creditScore,
+              credit_report_link: response.Data.creditReportLink,
+              provider: response.provider,
+            },
+          ],
+        }));
+
+        setLoading(false);
+        toast.success(response.message);
+      } else {
+        toast.info(response.message || "Incorect details Provided!");
+      }
+    } catch (error) {
+      console.error("Error fetching data:", error);
+      toast.error("An error occurred while fetching data.");
+    }
+    setLoading(false);
+  };
+
+  // finding Statecodelist
   const normalize = (str) => str?.toLowerCase().replaceAll(" ", "").trim();
   const code = stateCodelist?.find(
     (item) =>
@@ -324,7 +370,9 @@ const GetScore = ({ btnEnable = false }) => {
         setLoading(false);
         toast.success(response.message);
       } else {
-        toast.error("Data does not exist in Bureau Report!" || response.message);
+        toast.error(
+          "Data does not exist in Bureau Report!" || response.message,
+        );
       }
     } catch (error) {
       console.error("Error fetching data:", error);

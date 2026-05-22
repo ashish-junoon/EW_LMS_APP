@@ -251,6 +251,18 @@ export const ScoreFromExperian = async (req) => {
     }
 };
 
+
+//Get Credit Score Crif
+export const ScoreFromCrif = async (req) => {
+    try {
+        const response = await api.post("/Crif/GetCrifCreditReport", req);
+        return response.data; // Return the API response data
+    } catch (error) {
+        console.error("Get Credit Score error:", error.response?.data || error.message);
+        throw error; // Rethrow error to handle it in the calling function
+    }
+};
+
 //Get Crdit Score from Transunion
 export const ScoreFromTransunion = async (req) => {
     try {
