@@ -271,7 +271,9 @@ function EMISchedule({ data, loan_Id, hideincollection, fetchData }) {
       emp_code == "JC0037" ||
       emp_code == "JC0001" ||
       emp_code == "JC0044" ||
-      emp_code == "JC0061"
+      emp_code == "JC0061" ||
+      emp_code == "JC0070"
+
     ) {
       return;
     } else if (
