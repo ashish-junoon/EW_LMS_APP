@@ -29,6 +29,9 @@ const Dashboardv3 = () => {
   const [tabNamesFilter, setTabName] = useState("RM Report");
   const [graphData, setGraphData] = useState([]);
 
+  const {adminUser} = useAuth()
+    const isAdmin = adminUser?.role?.toLowerCase() == "admin" || adminUser?.role?.toLowerCase() == "administrator"
+
   const [dashboardData, setDashboardData] = useState({
     SummeryRepoprtData: [],
     LeadReportData: [],
@@ -48,8 +51,6 @@ const Dashboardv3 = () => {
   const [endDate, setendDate] = useState(
     new Date().toISOString().split("T")[0],
   );
-
-  const { adminUser } = useAuth();
 
   const dateToday = new Date().toISOString().split("T")[0];
 
@@ -325,18 +326,18 @@ const Dashboardv3 = () => {
         </div>
 
         {/* Right Side */}
-        <div>
+        {isAdmin && <div>
           {dashboardData.kpiDashboardReports?.length > 0 && (
             <CardList
               title="KPI Dashboard"
               data={dashboardData?.kpiDashboardReports}
             />
           )}
-        </div>
+        </div>}
       </div>
 
       {/* 📊 MAIN GRID */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
+      {isAdmin && <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
         {/* Summary */}
         <div className="lg:col-span-2 bg-white rounded-lg shadow-sm border p-4">
           <h3 className="text-sm font-semibold text-gray-800 mb-2">
@@ -364,7 +365,7 @@ const Dashboardv3 = () => {
             />
           )}
         </div>
-      </div>
+      </div>}
 
       {/* 🧭 TABS */}
       <p className="font-semibold text-gray-600 text-sm px-2">Today's Report</p>
