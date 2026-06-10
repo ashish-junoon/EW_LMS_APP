@@ -113,6 +113,7 @@ function App() {
     "/admin/manage-branch": ManageBranch,
     "/admin/verify-otp": VerifyOtp,
     "/admin/master-search": MasterSearch,
+    "/manage-leads/master-search": MasterSearch,
 
     //Reports Section
     "/report-section/disbursement-report" : DisbursementCollectionReportV1,

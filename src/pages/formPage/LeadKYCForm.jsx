@@ -75,7 +75,7 @@ const LeadKYCForm = () => {
   const permission = pageAccess?.[0].read_write_permission;
   const funder = adminUser.role === "Funder" ? true : false;
 
-  const isAdmin = adminUser?.role?.toLowerCase() == "admin";
+  const isAdmin = adminUser?.role?.toLowerCase() == "admin" || adminUser?.role?.toLowerCase() == "administrator";
 
   const addOneDay = (d) => {
     const [dd, mm, yy] = d.split("-").map(Number);

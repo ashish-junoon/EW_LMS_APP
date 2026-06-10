@@ -129,7 +129,7 @@ function EMISchedule({
   );
 
   const isHardUpdateAllowed = adminUser.emp_code == "JC0020";
-  const isAdmin = adminUser?.role?.toLowerCase() == "admin"
+  const isAdmin = adminUser?.role?.toLowerCase() == "admin" || adminUser?.role?.toLowerCase() == "administrator"
   
 
   const loanDetails = [
