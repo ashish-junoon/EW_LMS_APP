@@ -202,6 +202,10 @@ const IncompleteLead = () => {
     toast.info("No filter available for this page.");
   };
 
+  function ErrorMsg({ error }) {
+    return <p className="text-red-500 text-xs mt-1">{error}</p>;
+  }
+
   if (isLoading) return <Loader />;
 
   return (

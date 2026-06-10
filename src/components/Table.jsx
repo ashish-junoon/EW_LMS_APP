@@ -4,9 +4,13 @@ import { CSVLink } from "react-csv";
 import Icon from "./utils/Icon";
 import Button from "./utils/Button";
 import Tooltip from "./utils/Tooltip";
+import { useAuth } from "../context/AuthContext";
 
 const Table = ({ columns, data, title, handleFilter, pagination = true, selectableRows = false, onRowClicked, exportable = false, csvData, filename, paginationPerPage }) => {
     const [filterText, setFilterText] = useState("");
+
+    const {adminUser} = useAuth()
+    const isAdmin = adminUser?.role?.toLowerCase() == "admin" || adminUser?.role?.toLowerCase() == "administrator";
 
     // Custom styles for the table
     const customStyles = {
@@ -74,7 +78,7 @@ const Table = ({ columns, data, title, handleFilter, pagination = true, selectab
                             </div>
 
                             <div>
-                                {exportable === true && (
+                                {exportable === true && isAdmin && (
                                     <CSVLink
                                         data={csvData ? csvData : filteredData}
                                         filename={filename ? filename : "export.csv"}

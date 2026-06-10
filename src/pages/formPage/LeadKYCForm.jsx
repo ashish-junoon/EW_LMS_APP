@@ -12,10 +12,12 @@ import {
   UpdateMenualNACH,
   getbankCodeListByCode,
   registerEMandateEaseBuze,
+  addRemark,
+  ChangeStepStatus,
 } from "../../api/ApiFunction";
 import SelectInput from "../../components/fields/SelectInput";
 import TextInput from "../../components/fields/TextInput";
-import { eKYCRemarks } from "../../components/content/Data";
+import { addRemarkOptions, eKYCRemarks, MoveRemarkOptions } from "../../components/content/Data";
 import Button from "../../components/utils/Button";
 import Modal from "../../components/utils/Modal";
 import ErrorMsg from "../../components/utils/ErrorMsg";
@@ -50,6 +52,7 @@ const LeadKYCForm = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isNachOpen, setIsNachOpen] = useState(false);
   const [isBankOpen, setisBankOpen] = useState(false);
+  const [isBackLeadOpen, setisBackLeadOpen] = useState(false);
   const [Error, SetError] = useState(null);
   const [EmandateData, SetEmandateData] = useState(null);
   const [MandateLink, SetMandateLink] = useState(null);
@@ -72,13 +75,13 @@ const LeadKYCForm = () => {
   const permission = pageAccess?.[0].read_write_permission;
   const funder = adminUser.role === "Funder" ? true : false;
 
+  const isAdmin = adminUser?.role?.toLowerCase() == "admin";
+
   const addOneDay = (d) => {
-  const [dd, mm, yy] = d.split("-").map(Number);
-  const dt = new Date(yy, mm - 1, dd + 1);
-  return `${String(dt.getDate()).padStart(2,0)}-${String(dt.getMonth()+1).padStart(2,0)}-${dt.getFullYear()}`;
-};
-
-
+    const [dd, mm, yy] = d.split("-").map(Number);
+    const dt = new Date(yy, mm - 1, dd + 1);
+    return `${String(dt.getDate()).padStart(2, 0)}-${String(dt.getMonth() + 1).padStart(2, 0)}-${dt.getFullYear()}`;
+  };
 
   const FLAG_MAP = {
     netbank_flag: {
@@ -282,8 +285,12 @@ const LeadKYCForm = () => {
           "Invalid email format",
           (value) => !value || Yup.string().email().isValidSync(value),
         ),
-        expiry_date: Yup.date().required("Expiry date is required")
-        .min(new Date(new Date().setHours(0, 0, 0, 0)), "Expiry date cannot be in the past"),
+      expiry_date: Yup.date()
+        .required("Expiry date is required")
+        .min(
+          new Date(new Date().setHours(0, 0, 0, 0)),
+          "Expiry date cannot be in the past",
+        ),
       // expiry_date: Yup.date()
       //   .min(
       //     new Date(new Date().setHours(0, 0, 0, 0)),
@@ -317,7 +324,7 @@ const LeadKYCForm = () => {
         ? values.expiry_date.split("-").reverse().join("-")
         : "";
 
-        const formattedDate2 = addOneDay(formattedDate)
+      const formattedDate2 = addOneDay(formattedDate);
 
       //for Final Collection Date Date DD-MM-YY to YY-DD-MM
       // const formattedDate2 = values.final_collection_date
@@ -359,7 +366,7 @@ const LeadKYCForm = () => {
         const response = await registerEMandateEaseBuze(req);
         if (response.status) {
           SetEmandateData(response);
-          SetMandateLink(response?.data?.payment_url)
+          SetMandateLink(response?.data?.payment_url);
           resetForm();
         } else {
           const errorMsg = response?.message || "Something went wrong";
@@ -409,9 +416,23 @@ const LeadKYCForm = () => {
 
   // handle Approve confirm Yes button
   const handleApproveYes = () => {
-    const { is_e_kyc_done, is_e_nach_activate, is_loan_consent, video_kyc_verified } = userData;
+    const {
+      is_e_kyc_done,
+      is_e_nach_activate,
+      is_loan_consent,
+      video_kyc_verified,
+      sanction_consent_otp_verified,
+      aggrement_consent_otp_verified,
+    } = userData;
 
-    if (!is_e_kyc_done || !is_e_nach_activate || !is_loan_consent || !video_kyc_verified) {
+    if (
+      !is_e_kyc_done ||
+      !is_e_nach_activate ||
+      !is_loan_consent ||
+      !video_kyc_verified ||
+      !sanction_consent_otp_verified ||
+      !aggrement_consent_otp_verified
+    ) {
       toast.error("Wait for applicant to complete application.");
       return;
     }
@@ -439,6 +460,48 @@ const LeadKYCForm = () => {
     setOpenApporve(false); // Close modal after approval
     // navigate("/manage-leads/leads-in-kyc");
   };
+
+  const formikRemarks = useFormik({
+    initialValues: {
+      reason: "",
+      remarks: "",
+    },
+    validationSchema: Yup.object({
+      reason: Yup.string().required("Select reason."),
+      remarks: Yup.string().when("reason", {
+        is: (reason) => reason !== "Interested",
+        then: () =>
+          Yup.string()
+            .required("Remarks are required.")
+            .min(10, "Remarks must be at least 10 characters."),
+        otherwise: () => Yup.string().notRequired(),
+      }),
+    }),
+
+    onSubmit: async (values) => {
+      const req = {
+        lead_id: lead_id,
+        reason: `Lead Moved kyc to credit: ${values.reason}`,
+        remarks: values.remarks,
+        process_by: adminUser.emp_code,
+      };
+
+      try {
+        const response = await addRemark(req);
+        if (response.status) {
+          formik.resetForm();
+          handleSendLeadBack();
+        } else {
+          toast.error(response.message);
+        }
+      } catch (error) {
+        console.error("Error adding remark:", error);
+        toast.error("An error occurred while adding remark.");
+      } finally {
+        setOpen(false);
+      }
+    },
+  });
 
   //handle Approve confirm No button
   const handleApproveNo = () => {
@@ -484,19 +547,33 @@ const LeadKYCForm = () => {
                   {/* <div className=''>
                       <AddBank fetchData={fetchData} />
                   </div> */}
-                  {permission &&
-                  <Button
-                    btnName={"Create Mandate"}
-                    btnIcon={"MdAutoMode"}
-                    type={""}
-                    disabled={isOnHold}
-                    onClick={() => {
-                      userData?.secondarybankinfo.length
-                        ? setisBankOpen(!isBankOpen)
-                        : toast.info("No Banks Found for Mandate!");
-                    }}
-                    style="min-w-[150px] bg-primary text-sm text-white font-medium border border-primary py-2 px-4 rounded hover:bg-white hover:text-primary"
-                  />}
+                  {permission && (
+                    <Button
+                      btnName={"Create Mandate"}
+                      btnIcon={"MdAutoMode"}
+                      type={""}
+                      disabled={isOnHold}
+                      onClick={() => {
+                        userData?.secondarybankinfo.length
+                          ? setisBankOpen(!isBankOpen)
+                          : toast.info("No Banks Found for Mandate!");
+                      }}
+                      style="min-w-[150px] bg-primary text-sm text-white font-medium border border-primary py-2 px-4 rounded hover:bg-white hover:text-primary"
+                    />
+                  )}
+
+                  {isAdmin && !userData?.is_e_nach_activate && (
+                    <Button
+                      btnName={"Move Lead Back"}
+                      btnIcon={"TbArrowBackUpDouble"}
+                      type={""}
+                      disabled={isOnHold}
+                      onClick={() => {
+                        setisBackLeadOpen(true);
+                      }}
+                      style="min-w-[150px] bg-primary text-sm text-white font-medium border border-primary py-2 px-4 rounded hover:bg-white hover:text-primary"
+                    />
+                  )}
                   {permission && userData?.is_e_nach_activate === false && (
                     <Button
                       btnName={"Update e-NACH Token"}
@@ -509,22 +586,24 @@ const LeadKYCForm = () => {
                   )}
                 </div>
 
-                {MandateLink && 
-                <div className="mt-5 font-semibold text-sm">
-                  <p>Mandate Link:</p>
-                  <div className="flex gap-1 w-full">
-                    <div className="bg-gray-100 overflow-auto no-scrollbar border border-gray-200 text-sm font-semibold text-primary px-1 min-w-[300px] max-w-[300px]">{MandateLink}</div>
-                    <Button
+                {MandateLink && (
+                  <div className="mt-5 font-semibold text-sm">
+                    <p>Mandate Link:</p>
+                    <div className="flex gap-1 w-full">
+                      <div className="bg-gray-100 overflow-auto no-scrollbar border border-gray-200 text-sm font-semibold text-primary px-1 min-w-[300px] max-w-[300px]">
+                        {MandateLink}
+                      </div>
+                      <Button
                         // btnName={"Update e-NACH Token"}
                         btnIcon={"FaCopy"}
                         type={""}
                         disabled={isOnHold}
-                        onClick={()=> HandleCopyLink(MandateLink)}
+                        onClick={() => HandleCopyLink(MandateLink)}
                         style="bg-primary text-sm text-white font-medium border border-primary p-2 rounded hover:bg-white hover:text-primary"
-                    />
+                      />
+                    </div>
                   </div>
-                </div>
-                }
+                )}
               </div>
             </div>
           </div>
@@ -538,7 +617,9 @@ const LeadKYCForm = () => {
           <div className="lg:col-span-2 py-5">
             <div>{!funder && <FormSidebar data={userData} />}</div>
           </div>
-          <div className={`${!funder ? "lg:col-span-5" : "lg:col-span-7"} py-5`}>
+          <div
+            className={`${!funder ? "lg:col-span-5" : "lg:col-span-7"} py-5`}
+          >
             <div className="lg:px-5">
               <Personal />
               <Employment />
@@ -577,13 +658,38 @@ const LeadKYCForm = () => {
       label: "Mandate History",
       content: (
         <div className="mb-5">
-          <MandateHistory
-            data={userData}
-          />
+          <MandateHistory data={userData} />
         </div>
       ),
     },
   ];
+
+  const handleSendLeadBack = async () => {
+    try {
+      setIsLoading(true);
+      const req = {
+        lead_id: lead_id,
+        user_id: user_id,
+        from_step: 4,
+        to_step: 3,
+        updated_by: adminUser.emp_code,
+      };
+
+      const response = await ChangeStepStatus(req);
+      if (response.status) {
+        toast.success(response.message || "Lead moved to Credit Assessment");
+        navigate("/manage-leads/leads-in-kyc");
+      } else {
+        toast.info(response.message || "Unable to move lead back!");
+      }
+    } catch (error) {
+      console.log("Error in Send lead back", error);
+      toast.error(error.message);
+    } finally {
+      setisBackLeadOpen(false);
+      setIsLoading(false);
+    }
+  };
 
   return (
     <>
@@ -991,6 +1097,98 @@ const LeadKYCForm = () => {
           </div>
         )}
       </Modal>
+
+      <Modal
+        isOpen={isBackLeadOpen}
+        onClose={() => setisBackLeadOpen(false)}
+        heading={"Add Remark"}
+      >
+        <div className="px-5">
+          <form onSubmit={formikRemarks.handleSubmit} className="my-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="col-span-2">
+                <SelectInput
+                  label="Select Reason"
+                  placeholder="Select"
+                  icon="RiDraftLine"
+                  name="reason"
+                  id="reason"
+                  options={MoveRemarkOptions}
+                  onChange={formikRemarks.handleChange}
+                  onBlur={formikRemarks.handleBlur}
+                  value={formikRemarks.values.reason}
+                />
+                {formikRemarks.touched.reason &&
+                  formikRemarks.errors.reason && (
+                    <ErrorMsg error={formikRemarks.errors.reason} />
+                  )}
+              </div>
+              {formikRemarks.values.reason !== "Interested" && (
+                <div className="col-span-2">
+                  <TextInput
+                    label="Remarks"
+                    icon="IoPersonOutline"
+                    placeholder="Write Remarks"
+                    name="remarks"
+                    maxLength={200}
+                    id="remarks"
+                    onChange={formikRemarks.handleChange}
+                    onBlur={formikRemarks.handleBlur}
+                    value={formikRemarks.values.remarks}
+                  />
+                  {formikRemarks.touched.remarks &&
+                    formikRemarks.errors.remarks && (
+                      <ErrorMsg error={formikRemarks.errors.remarks} />
+                    )}
+                </div>
+              )}
+            </div>
+
+            <div className="flex justify-end gap-4 mt-2">
+              <Button
+                btnName={isLoading ? "ADDING REMARKS" : "ADD REMARKS"}
+                btnIcon="IoCheckmarkCircleSharp"
+                type="submit"
+                disabled={isLoading}
+                style="min-w-[100px] md:w-auto text-xs font-semibold mt-4 py-1 px-4 border border-primary text-primary border hover:border-success hover:bg-success hover:text-white hover:font-bold italic"
+              />
+
+              <Button
+                btnName={"CLOSE"}
+                btnIcon={"IoCloseCircleOutline"}
+                type={"button"}
+                onClick={() => setisBackLeadOpen(false)}
+                style="min-w-[100px] md:w-auto text-xs font-semibold mt-4 py-1 px-4 border border-primary text-primary border hover:border-amber-500 hover:bg-amber-500 hover:text-black hover:font-bold italic"
+              />
+            </div>
+          </form>
+        </div>
+      </Modal>
+
+      {/* <Modal isOpen={isBackLeadOpen} onClose={() => setisBackLeadOpen(false)}>
+        <div className="text-center font-semibold">
+          <h1>
+            Are you sure you want to move this lead back to Credit Assessment?
+          </h1>
+        </div>
+        <div className="flex justify-end gap-4 mt-2">
+          <Button
+            btnName="Yes"
+            btnIcon="IoCheckmarkCircleSharp"
+            type="button"
+            onClick={() => handleSendLeadBack()}
+            disabled={isLoading}
+            style="min-w-[80px] md:w-auto mt-4 py-1 px-4 border border-primary text-primary hover:border-success hover:bg-success hover:text-white hover:font-semibold"
+          />
+          <Button
+            btnName="No"
+            btnIcon="IoCloseCircleOutline"
+            type="button"
+            onClick={() => setisBackLeadOpen(false)}
+            style="min-w-[80px] md:w-auto mt-4 py-0.5 px-4 border border-primary text-primary hover:border-dark hover:bg-dark hover:text-white hover:font-semibold"
+          />
+        </div>
+      </Modal> */}
     </>
   );
 };

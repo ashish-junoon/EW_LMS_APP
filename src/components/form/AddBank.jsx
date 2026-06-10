@@ -138,7 +138,7 @@ const AddBank = ({fetchData}) => {
           toast.success(response.message);
           setIsOpen(false);
           resetForm();
-          fetchData()
+          fetchData({ UserId: leadInfo.user_id, leadId: leadInfo.lead_id })
         } else {
           toast.error(response.message);
         }
@@ -255,7 +255,7 @@ const AddBank = ({fetchData}) => {
         setIsLoading(false);
         // setBankVerified(response?.data?.is_valid);
         toast.success("Bank verified successfully.");
-        fetchData();
+        fetchData({ UserId: leadInfo.user_id, leadId: leadInfo.lead_id });
       } else {
         toast.error(response.data.failure_reason || response.data.npci_error_description || response.message || "Bank verification failed!");
       }

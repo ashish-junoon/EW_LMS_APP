@@ -68,6 +68,9 @@ import EnachTransactionReport from "./pages/Reports/EnachTransectionReport";
 import MasterSheetReport from "./pages/Reports/MasterSheetReport";
 import Dashboardv2 from "./admin/Dashboardv2";
 import CustomerLoanHistory from "./pages/formPage/CustomerLoanHistory";
+import Dashboardv3 from "./admin/Dashboardv3";
+import LeadReportStatusWise from "./pages/Reports/LeadReportStatusWise";
+import MasterSearch from "./pages/formPage/MasterSearch";
 
 function App() {
   const { adminUser } = useAuth();
@@ -79,7 +82,8 @@ function App() {
 
     //  Menu URL Components
     // "/": Dashboard,
-    "/": Dashboardv2,
+    // "/": Dashboardv2,
+    "/": Dashboardv3,
 
     //Manage Leads
     "/manage-leads/incomplete-leads": IncompleteLead,
@@ -108,6 +112,7 @@ function App() {
     "/admin/manage-designation": ManageDesignation,
     "/admin/manage-branch": ManageBranch,
     "/admin/verify-otp": VerifyOtp,
+    "/admin/master-search": MasterSearch,
 
     //Reports Section
     "/report-section/disbursement-report" : DisbursementCollectionReportV1,
@@ -117,6 +122,7 @@ function App() {
     "/report-section/demand-vs-collection" : DemandvsCollectionReport,
     "/report-section/enach-transactions" : EnachTransactionReport,
     "/report-section/mastersheet-report" : MasterSheetReport,
+    // "/report-section/status-wise-report" : LeadReportStatusWise,
 
     
 
@@ -204,6 +210,7 @@ function App() {
               {/* <Route path="/manage-leads/disbursal-leads" element={<DisbursalReady />} /> */}
               <Route path="/admin/loan-history" element={<CustomerLoanHistory />} /> 
 
+              <Route path="/report-section/status-wise-report" element={<LeadReportStatusWise />} /> 
 
               {/* Dynamically generated routes based on permissions */}
               {allowedPaths.map(path => (

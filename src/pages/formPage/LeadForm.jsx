@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import { toast } from 'react-toastify';
@@ -35,9 +35,10 @@ const LeadForm = () => {
     const [isLoading, setIsLoading] = useState(true);
     const [openApporve, setOpenApporve] = useState(false);
     const [openReject, setOpenRejcet] = useState(false);
+    const [searchParams] = useSearchParams();
 
-    const lead_id = location.state?.lead_id;
-    const user_id = location.state?.user_id;
+    const lead_id = location.state?.lead_id || searchParams.get("lead_id");
+    const user_id = location.state?.user_id || searchParams.get("user_id");
     const isOnHold = location.state?.isOnHold
     const { setLeadInfo } = useOpenLeadContext();
     const { adminUser } = useAuth();
@@ -46,6 +47,7 @@ const LeadForm = () => {
     const funder = adminUser.role === 'Funder' ? true : false
 
     const navigate = useNavigate();
+    
 
 
     useEffect(() => {

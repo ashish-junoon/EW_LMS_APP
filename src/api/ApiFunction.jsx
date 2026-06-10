@@ -296,6 +296,17 @@ export const GetEMISchedule = async (req) => {
     }
 };
 
+//get EMI schedule
+export const GetPaymentLinkDetails = async (req) => {
+    try {
+        const response = await api.post("/EasebuzzIntegration/GetPaymentLinkDetails", req);
+        return response.data; // Return the API response data
+    } catch (error) {
+        console.error("Get EMI Schedule error:", error.response?.data || error.message);
+        throw error; // Rethrow error to handle it in the calling function
+    }
+};
+
 //Add Page Group Name
 export const AddPageGroupName = async (req) => {
     try {
@@ -399,6 +410,17 @@ export const GetBankList = async () => {
 export const AddUserBankInfo = async (req) => {
     try {
         const response = await api.post("/User/AddUserBankInfo", req);
+        return response.data; // Return the API response data
+    } catch (error) {
+        console.error("Get Empolyee List error:", error.response?.data || error.message);
+        throw error; // Rethrow error to handle it in the calling function
+    }
+}
+
+
+export const SwitchBank = async (req) => {
+    try {
+        const response = await api.post("/Admin/SwitchBank", req);
         return response.data; // Return the API response data
     } catch (error) {
         console.error("Get Empolyee List error:", error.response?.data || error.message);
@@ -574,6 +596,17 @@ export const ProductStatusChange = async (req) => {
 export const PullNACHPaymentEaseBuzz = async (req) => {
     try {
         const response = await api.post("/EasebuzzIntegration/PullPaymentUsingEMandate", req);
+        return response.data; // Return the API response data
+    } catch (error) {
+        console.error("Pull NACH Payment error:", error.response?.data || error.message);
+        throw error; // Rethrow error to handle it in the calling function
+    }
+}
+
+// CancelPresentment
+export const CancelPresentment = async (req) => {
+    try {
+        const response = await api.post("/EasebuzzIntegration/CancelPresentment", req);
         return response.data; // Return the API response data
     } catch (error) {
         console.error("Pull NACH Payment error:", error.response?.data || error.message);
@@ -809,6 +842,18 @@ export const UpdateMenualNACH = async (req) => {
 export const UpdateMenualEMIPayment = async (req) => {
     try {
         const response = await api.post("/Admin/ManualCollectionUpdate_V1", req);
+        return response.data; // Return the API response data
+    } catch (error) {
+        console.error("Update Menual EMI Payment error:", error.response?.data || error.message);
+        throw error; // Rethrow error to handle it in the calling function
+    }
+}
+
+
+//Update collection payment link
+export const CreateCollectionPaymentLink = async (req) => {
+    try {
+        const response = await api.post("/EasebuzzIntegration/CreatePaymentLink", req);
         return response.data; // Return the API response data
     } catch (error) {
         console.error("Update Menual EMI Payment error:", error.response?.data || error.message);
@@ -1192,6 +1237,30 @@ export const CustomerLoanHistoryWithPaymentDetails = async (req) => {
 }
 
 
+//To Fetch LeadStatusReport
+export const LeadStatusReport = async (req) => {
+    try {
+        const response = await api.post("/Report_V1/LeadStatusReport", req);
+        return response.data;
+    } catch (error) {
+        console.error("Loan History:", error.response?.data || error.message);
+        throw error;
+    }
+}
+
+
+//To ChangeStepStatus
+export const ChangeStepStatus = async (req) => {
+    try {
+        const response = await api.post("/Admin/ChangeStepStatus", req);
+        return response.data;
+    } catch (error) {
+        console.error("Loan History:", error.response?.data || error.message);
+        throw error;
+    }
+}
+
+
 //To Fetch Cutomer Loan History
 export const CustomerLoanDetail = async (req) => {
     try {
@@ -1202,3 +1271,102 @@ export const CustomerLoanDetail = async (req) => {
         throw error;
     }
 }
+
+
+
+
+
+//==================
+// V3 Dashboard API
+//==================
+
+export const SummaryReport = async (req) => {
+    try {
+        const response = await api.post("/Report_V1/SummaryReport", req);
+        return response.data;
+    } catch (error) {
+        console.error("Loan History:", error.response?.data || error.message);
+        throw error;
+    }
+}
+
+export const OperationalMISReport = async (req) => {
+    try {
+        const response = await api.post("/Report_V1/OperationalMISReport", req);
+        return response.data;
+    } catch (error) {
+        console.error("Loan History:", error.response?.data || error.message);
+        throw error;
+    }
+}
+
+export const RevenueReport = async (req) => {
+    try {
+        const response = await api.post("/Report_V1/RevenueReport", req);
+        return response.data;
+    } catch (error) {
+        console.error("Loan History:", error.response?.data || error.message);
+        throw error;
+    }
+}
+
+export const KPIDashboardReport = async (req) => {
+    try {
+        const response = await api.post("/Report_V1/KPIDashboardReport", req);
+        return response.data;
+    } catch (error) {
+        console.error("Loan History:", error.response?.data || error.message);
+        throw error;
+    }
+}
+
+export const LeadReport = async (req) => {
+    try {
+        const response = await api.post("/Report_V1/LeadReport", req);
+        return response.data;
+    } catch (error) {
+        console.error("Loan History:", error.response?.data || error.message);
+        throw error;
+    }
+}
+
+export const DailyCreditReport = async (req) => {
+    try {
+        const response = await api.post("/Report_V1/DailyCreditReport", req);
+        return response.data;
+    } catch (error) {
+        console.error("Loan History:", error.response?.data || error.message);
+        throw error;
+    }
+}
+
+export const DailyDisbursementReport = async (req) => {
+    try {
+        const response = await api.post("/Report_V1/DailyDisbursementReport", req);
+        return response.data;
+    } catch (error) {
+        console.error("Loan History:", error.response?.data || error.message);
+        throw error;
+    }
+}
+
+export const CollectionPerformanceSheet = async (req) => {
+    try {
+        const response = await api.post("/Report_V1/CollectionPerformanceSheet", req);
+        return response.data;
+    } catch (error) {
+        console.error("Loan History:", error.response?.data || error.message);
+        throw error;
+    }
+}
+
+export const DashboardReport = async (req) => {
+    try {
+        const response = await api.post("/Report_V1/DashboardReport", req);
+        return response.data;
+    } catch (error) {
+        console.error("Loan History:", error.response?.data || error.message);
+        throw error;
+    }
+}
+

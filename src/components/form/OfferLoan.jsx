@@ -181,7 +181,7 @@ function OfferLoan({btnEnable = false}) {
             tenure: '',
             interestRate: '',
             interestType: '',
-            processFee: '',
+            processFee: '10',
             cgst: "9",
             sgst: "9",
             igst: "0",
@@ -314,7 +314,7 @@ function OfferLoan({btnEnable = false}) {
                         btnName={"Create Payday Product"}
                         btnIcon={"IoCloseCircleOutline"}
                         type={"IoCheckmarkCircleSharp"}
-                        onClick={() => setIsOpen(true)}
+                        onClick={() => {leadInfo?.is_bank_verified ? setIsOpen(true) : toast.info("Please verify bank first!")}}
                         disabled={btnEnable}
                         style="min-w-[150px] max-lg:w-full text-sm italic font-semibold md:w-auto my-4 py-1 max-lg:py-3 border-success px-4 text-white bg-success border hover:border-success text-primary hover:bg-white hover:text-success"
                     />
@@ -606,6 +606,7 @@ function OfferLoan({btnEnable = false}) {
                                     placeholder="Proccesing Fee"
                                     name="processFee"
                                     type="text"
+                                    disabled={true}
                                     maxLength={4}
                                     {...addProduct.getFieldProps("processFee")}
                                 />

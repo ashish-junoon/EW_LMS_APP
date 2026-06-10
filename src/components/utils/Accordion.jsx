@@ -62,7 +62,7 @@ const Accordion = ({
                                                         position="top"
                                                         delay={200}
                                                         offset={8}
-                                                        message={tooltipMsg}
+                                                        message={tooltipMsg ? tooltipMsg : btn.tooltipMsg}
                                                     >
                                                         <button
                                                             type="button"

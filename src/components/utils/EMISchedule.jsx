@@ -13,6 +13,9 @@ import {
   PullNACHPaymentEaseBuzz,
   PullPaymentUsingEaseBuzz,
   getMandateHistory,
+  CancelPresentment,
+  CreateCollectionPaymentLink,
+  GetPaymentLinkDetails,
 } from "../../api/ApiFunction";
 import Button from "./Button";
 import Modal from "./Modal";
@@ -32,6 +35,8 @@ import {
   emiStaus,
   collectionPaymentMode,
   disburesementMode,
+  emiStausforlink,
+  emiStausforlinkforAdmin
 } from "../content/Data";
 import Loader from "./Loader";
 import { useNavigate } from "react-router-dom";
@@ -43,10 +48,21 @@ import EditCollectionForm from "../form/EditCollectionForm";
 // Extend dayjs with the plugin
 dayjs.extend(isSameOrBefore);
 
-function EMISchedule({ data, loan_Id, hideincollection, fetchData }) {
+function EMISchedule({
+  data,
+  loan_Id,
+  hideincollection,
+  fetchData,
+  fetchEMICollectionData,
+}) {
   const [tableData, setTableData] = useState([]);
+  const [tableDataNew, setTableDataNew] = useState([]);
+  const [isCancelOpen, setisCancelOpen] = useState(false);
+  const [cancelData, setCancelData] = useState({});
   const [schedule, setSchedule] = useState(null);
   const [IsOpen, setIsOpen] = useState(false);
+  const [IsLinkOpen, setIsLinkOpen] = useState(false);
+  const [ConfirmationAlert, SetConfirmationAlert] = useState(false);
   const [IsEditColOpen, setIsEditColOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isPullNach, setIsPullNach] = useState(false);
@@ -113,6 +129,8 @@ function EMISchedule({ data, loan_Id, hideincollection, fetchData }) {
   );
 
   const isHardUpdateAllowed = adminUser.emp_code == "JC0020";
+  const isAdmin = adminUser?.role?.toLowerCase() == "admin"
+  
 
   const loanDetails = [
     {
@@ -273,7 +291,6 @@ function EMISchedule({ data, loan_Id, hideincollection, fetchData }) {
       emp_code == "JC0044" ||
       emp_code == "JC0061" ||
       emp_code == "JC0070"
-
     ) {
       return;
     } else if (
@@ -569,7 +586,8 @@ function EMISchedule({ data, loan_Id, hideincollection, fetchData }) {
               parseInt(status) !== 11 &&
               parseInt(status) !== 6 &&
               // parseInt(status) !== 12 && //Changed 23-03-2026
-              parseInt(status) !== 13
+              parseInt(status) !== 13 &&
+              parseInt(status) !== 15
             ) {
               // return collected + waived === parseFloat(totalOutstanding);
               return (
@@ -591,7 +609,8 @@ function EMISchedule({ data, loan_Id, hideincollection, fetchData }) {
             if (
               parseInt(status) === 6 ||
               parseInt(status) === 12 ||
-              parseInt(status) === 13
+              parseInt(status) === 13 ||
+              parseInt(status) === 15
             ) {
               return collected <= dueToday;
             }
@@ -712,6 +731,181 @@ function EMISchedule({ data, loan_Id, hideincollection, fetchData }) {
       }
     },
   });
+
+  const CollectionPaymentLink = useFormik({
+    initialValues: {
+      collectedAmount: "",
+      status: "",
+      remarks: "",
+      waiveOff: "0", // Default to 0 to avoid NaN issues
+    },
+
+    validationSchema: Yup.object({
+      collectedAmount: Yup.number()
+        .required("Collected Amount is required")
+        .test(
+          "close-loan-validation",
+          "Does not match total outstanding amount",
+          function (value) {
+            // console.log(
+            //   "total---------",
+            //   totalOutstanding,
+            //   activeLoan?.due_amount_on_current_day,
+            // );
+            const { status } = this.parent;
+
+            // Check if status is 10 or 11 and collected amount doesn't match total outstanding
+            // Status 6 is excluded from this validation
+            if (parseInt(status) === 10 || parseInt(status) === 11) {
+              return Math.round(value) === Math.round(totalOutstanding);
+              // return parseFloat(value) === parseFloat(totalOutstanding);
+            }
+            return true;
+          },
+        )
+        .test(
+          "amount-validation",
+          "Does not match total outstanding amount",
+          function (value) {
+            const { status, waiveOff, collectedAmount } = this.parent;
+            const collected = Math.round(collectedAmount || 0);
+            const waived = Math.round(waiveOff || 0);
+
+            // Only validate if status is provided and not 10, 11, or 6
+            // Status 6 is excluded from total outstanding validation
+            if (
+              status &&
+              parseInt(status) !== 10 &&
+              parseInt(status) !== 11 &&
+              parseInt(status) !== 6 &&
+              // parseInt(status) !== 12 && //Changed 23-03-2026
+              parseInt(status) !== 13 &&
+              parseInt(status) !== 15
+            ) {
+              // return collected + waived === parseFloat(totalOutstanding);
+              return (
+                Math.round(collected + waived) === Math.round(totalOutstanding)
+              );
+            }
+            return true;
+          },
+        )
+        // ✅ Partially Paid
+        .test(
+          "partial-paid-validation",
+          "Amount cannot exceed current due amount",
+          function (value) {
+            const { status } = this.parent;
+            const collected = Math.round(value || 0);
+            const dueToday = Math.round(totalOutstanding || 0);
+
+            if (
+              parseInt(status) === 6 ||
+              parseInt(status) === 12 ||
+              parseInt(status) === 13 ||
+              parseInt(status) === 15
+            ) {
+              return collected <= dueToday;
+            }
+
+            return true;
+          },
+        ),
+      status: Yup.string().required("Status is required"),
+      remarks: Yup.string().required("Remarks is required").min(3).max(50),
+      // bank: Yup.string().required("Bank is required"),
+      waiveOff: Yup.number()
+        .min(0, "Waived amount cannot be negative")
+        .test(
+          "waive-off-required",
+          "Settled amount is required",
+          function (value) {
+            const { status } = this.parent;
+            // Required if status is NOT 10, 11, or 6
+            if (
+              status &&
+              parseInt(status) !== 10 &&
+              parseInt(status) !== 11 &&
+              parseInt(status) !== 6
+            ) {
+              return value !== undefined && value !== null && value !== "";
+            }
+            return true; // Not required for status 10, 11, or 6
+          },
+        )
+        .test(
+          "waive-off-validation",
+          "Does not match total outstanding amount",
+          function (value) {
+            const { status, collectedAmount } = this.parent;
+            const collected = Math.round(collectedAmount || 0);
+            const waived = Math.round(value || 0);
+
+            // Only validate if status is provided and not 10, 11, or 6
+            // Status 6 is excluded from total outstanding validation
+            if (
+              status &&
+              parseInt(status) !== 10 &&
+              parseInt(status) !== 11 &&
+              parseInt(status) !== 6
+            ) {
+              return (
+                Math.round(collected + waived) === Math.round(totalOutstanding)
+              );
+            }
+            return true;
+          },
+        ),
+    }),
+    onSubmit: async (values) => {
+      try {
+        setIsLoading(true);
+
+        const TodayDate = new Date().toISOString().split("T")[0];
+        const formattedDate = TodayDate.split("-").reverse().join("-");
+
+        const req = {
+          lead_id: leadId,
+          loan_id: loanId,
+          name: data?.personalInfo[0]?.full_name,
+
+          email: data?.personalInfo[0]?.email_id,
+          // email: "rohit.koli@junooncapital.in",
+          phone: data?.mobile_number,
+          // phone: "9582207407",
+          vandor_code: "EWPL",
+          company_id: import.meta.env.VITE_COMPANY_ID,
+          product_code: import.meta.env.VITE_PRODUCT_NAME,
+          amount: String(Math.round(Number(values.collectedAmount))),
+          expiry_date: formattedDate,
+          payment_status: values.status,
+          message: values.remarks,
+          createdby: adminUser?.emp_code,
+          settled_amount: String(values.waiveOff),
+        };
+
+        const response = await CreateCollectionPaymentLink(req);
+        if (response.status) {
+          toast.success(response.message);
+          setIsLinkOpen(false);
+          fetchData();
+          fetchEMICollectionData();
+        } else {
+          toast.error(response.message || response.error);
+        }
+      } catch (error) {
+        toast.error(
+          error?.response?.data?.errors?.updated_by[0] ||
+            error?.message ||
+            "Something went wrong",
+        );
+      } finally {
+        setIsLoading(false);
+        SetConfirmationAlert(false);
+      }
+    },
+  });
+  
 
   const pullNachPaymentRazorPay = async () => {
     setIsPullNach(false);
@@ -967,6 +1161,30 @@ function EMISchedule({ data, loan_Id, hideincollection, fetchData }) {
     }
   };
 
+  const handleCancelPresentment = async () => {
+    setisCancelOpen(false);
+
+    if (!cancelData.transaction_id)
+      return toast.info("transaction_id is required!");
+
+    try {
+      const req = {
+        transaction_id: cancelData.transaction_id,
+      };
+      const response = await CancelPresentment(req);
+
+      if (response.status) {
+        toast.success(response.message || "Presentment canceled!");
+        fetchData();
+      } else {
+        toast.info(response.message || "Something went wrong!");
+      }
+    } catch (error) {
+      console.log("Error in handleCancelPresentment", error);
+      toast.error(error.message || "Something went wrong!");
+    }
+  };
+
   useEffect(() => {
     if (UpdatePayment.values.status === "10") {
       UpdatePayment.setFieldValue(
@@ -978,6 +1196,19 @@ function EMISchedule({ data, loan_Id, hideincollection, fetchData }) {
       UpdatePayment.setFieldValue("collectedAmount", "");
     }
   }, [UpdatePayment.values.status, totalOutstanding]);
+
+  //For Payment Collection Link
+  useEffect(() => {
+    if (CollectionPaymentLink.values.status === "10") {
+      CollectionPaymentLink.setFieldValue(
+        "collectedAmount",
+        Math.round(updateEMI.due_amount_on_current_day) ||
+          Math.round(activeLoan.due_amount_on_current_day),
+      );
+    } else {
+      CollectionPaymentLink.setFieldValue("collectedAmount", "");
+    }
+  }, [CollectionPaymentLink.values.status]);
 
   if (isLoading) {
     return <Loader msg="Initializing do not refresh ..." />;
@@ -1020,6 +1251,19 @@ function EMISchedule({ data, loan_Id, hideincollection, fetchData }) {
                     disabled={!permission}
                     onClick={() => {
                       (setIsOpen(true),
+                        setTotalOutstanding(
+                          activeLoan?.due_amount_on_current_day,
+                        ));
+                    }}
+                    style="min-w-[170px] hover:shadow-lg bg-primary text-white font-medium py-2 px-4 rounded"
+                  />
+                  <Button
+                    btnName={"Payment Link"}
+                    btnIcon={"MdOutlinePayments"}
+                    type={"button"}
+                    disabled={!permission}
+                    onClick={() => {
+                      (setIsLinkOpen(true),
                         setTotalOutstanding(
                           activeLoan?.due_amount_on_current_day,
                         ));
@@ -1421,6 +1665,240 @@ function EMISchedule({ data, loan_Id, hideincollection, fetchData }) {
         </div>
       </Modal>
 
+      {/* Update Payment Link*/}
+      <Modal
+        isOpen={IsLinkOpen}
+        onClose={() => setIsLinkOpen(false)}
+        heading={"Payment Link"}
+      >
+        <div className="md:px-5">
+          <div className="flex justify-evenly items-center gap-2 border border-primary py-2 max-md:px-1 rounded shadow-sm">
+            <div className="flex flex-col justify-center items-center">
+              <p className="text-xs md:text-sm font-semibold italic text-primary">
+                Current Outstanding{" "}
+              </p>
+              <p className="md:text-lg text-gray-800 font-bold">
+                ₹{Math.round(activeLoan?.due_amount_on_current_day)}
+              </p>
+            </div>
+
+            <div className="flex flex-col justify-center items-center">
+              <p className="text-xs md:text-sm font-semibold italic text-primary">
+                Current Interest
+              </p>
+              <p className="md:text-lg text-gray-800 font-bold">
+                ₹
+                {updateEMI.due_interest_on_current_day &&
+                updateEMI.due_interest_on_current_day
+                  ? Math.round(updateEMI.due_interest_on_current_day)
+                  : Math.round(activeLoan?.due_interest_on_current_day)}
+              </p>
+            </div>
+
+            <div className="flex flex-col justify-center items-center">
+              <p className="text-xs md:text-sm font-semibold italic text-primary">
+                Penal Charges
+              </p>
+              <p className="md:text-lg text-gray-800 font-bold">
+                ₹
+                {updateEMI.penal_charges && updateEMI.penal_charges
+                  ? Math.round(updateEMI.penal_charges)
+                  : Math.round(activeLoan?.penal_charges)}
+              </p>
+            </div>
+          </div>
+          <form onSubmit={CollectionPaymentLink.handleSubmit} className="my-2">
+            <div className="grid grid-cols-2 gap-3">
+              {/* <div className="col-span-1">
+                <DateInput
+                  label="Collection Date"
+                  icon="IoCalendarOutline"
+                  placeholder="DD-MM-YYYY"
+                  name="collectionDate"
+                  id="collectionDate"
+                  min={getMinDate(role, emp_code)}
+                  max={new Date().toISOString().split("T")[0]}
+                  // onChange={CollectionPaymentLink.handleChange}
+                  onChange={(e) => {
+                    CollectionPaymentLink.handleChange(e); // Formik function
+                    updateEmi(e); // Your custom function
+                  }}
+                  onBlur={CollectionPaymentLink.handleBlur}
+                  value={CollectionPaymentLink.values.collectionDate}
+                />
+                {CollectionPaymentLink.touched.collectionDate &&
+                  CollectionPaymentLink.errors.collectionDate && (
+                    <ErrorMsg error={CollectionPaymentLink.errors.collectionDate} />
+                  )}
+              </div> */}
+              <div className="col-span-1">
+                <SelectInput
+                  label="Payment Status"
+                  placeholder="Select"
+                  icon="MdModelTraining"
+                  name="status"
+                  id="status"
+                  options={isAdmin ? emiStausforlinkforAdmin : emiStausforlink}
+                  onChange={CollectionPaymentLink.handleChange}
+                  onBlur={CollectionPaymentLink.handleBlur}
+                  value={CollectionPaymentLink.values.status}
+                />
+                {CollectionPaymentLink.touched.status &&
+                  CollectionPaymentLink.errors.status && (
+                    <ErrorMsg error={CollectionPaymentLink.errors.status} />
+                  )}
+              </div>
+
+              {/* <div className="col-span-1">
+                <SelectInput
+                  label="Collection Mode"
+                  placeholder="Select"
+                  icon="RiSecurePaymentLine"
+                  name="collectionMode"
+                  id="collectionMode"
+                  options={collectionPaymentMode}
+                  onChange={CollectionPaymentLink.handleChange}
+                  onBlur={CollectionPaymentLink.handleBlur}
+                  value={CollectionPaymentLink.values.collectionMode}
+                />
+                {CollectionPaymentLink.touched.collectionMode &&
+                  CollectionPaymentLink.errors.collectionMode && (
+                    <ErrorMsg error={CollectionPaymentLink.errors.collectionMode} />
+                  )}
+              </div> */}
+              <div className="col-span-1">
+                <TextInput
+                  readOnly={CollectionPaymentLink.values.status === "10"}
+                  label="Collected Amount"
+                  icon="RiMoneyRupeeCircleFill"
+                  placeholder="Ex: 8000"
+                  name="collectedAmount"
+                  id="collectedAmount"
+                  onChange={CollectionPaymentLink.handleChange}
+                  onBlur={CollectionPaymentLink.handleBlur}
+                  value={CollectionPaymentLink.values.collectedAmount}
+                />
+                {CollectionPaymentLink.touched.collectedAmount &&
+                  CollectionPaymentLink.errors.collectedAmount && (
+                    <ErrorMsg
+                      error={CollectionPaymentLink.errors.collectedAmount}
+                    />
+                  )}
+              </div>
+
+              {CollectionPaymentLink.values.status !== "10" &&
+                CollectionPaymentLink.values.status !== "11" &&
+                CollectionPaymentLink.values.status !== "6" && (
+                  <div className="col-span-1">
+                    <TextInput
+                      label="Settled Amount"
+                      icon="IoDocumentTextOutline"
+                      placeholder="Enter waive off amount (required for status other than 10 or 11)"
+                      name="waiveOff"
+                      id="waiveOff"
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      onChange={CollectionPaymentLink.handleChange}
+                      onBlur={CollectionPaymentLink.handleBlur}
+                      value={CollectionPaymentLink.values.waiveOff}
+                    />
+                    {CollectionPaymentLink.touched.waiveOff &&
+                      CollectionPaymentLink.errors.waiveOff && (
+                        <ErrorMsg
+                          error={CollectionPaymentLink.errors.waiveOff}
+                        />
+                      )}
+                  </div>
+                )}
+
+              <div className="col-span-1">
+                <TextInput
+                  label="Remarks"
+                  icon="IoPersonOutline"
+                  placeholder="Write Remarks"
+                  name="remarks"
+                  id="remarks"
+                  onChange={CollectionPaymentLink.handleChange}
+                  onBlur={CollectionPaymentLink.handleBlur}
+                  value={CollectionPaymentLink.values.remarks}
+                />
+                {CollectionPaymentLink.touched.remarks &&
+                  CollectionPaymentLink.errors.remarks && (
+                    <ErrorMsg error={CollectionPaymentLink.errors.remarks} />
+                  )}
+              </div>
+            </div>
+            <div className="flex justify-end gap-4 mt-2">
+              {/* <Button
+                btnName="Generate Link"
+                btnIcon="FaLink"
+                type="button"
+                onClick={() => {
+                  if (CollectionPaymentLink.isValid) {
+                    SetConfirmationAlert(true);
+                    setIsLinkOpen(false);
+                  }
+                }}
+                style="min-w-[100px] md:w-auto mt-4 py-1 px-4 bg-success text-white"
+              /> */}
+
+              <Button
+                btnName="Generate Link"
+                btnIcon="FaLink"
+                type="button"
+                disabled={!CollectionPaymentLink.isValid}
+                onClick={() => {
+                  SetConfirmationAlert(true);
+                  setIsLinkOpen(false);
+                }}
+                style={`min-w-[100px] md:w-auto mt-4 py-1 px-4 ${
+                  CollectionPaymentLink.isValid
+                    ? "bg-success text-white"
+                    : "bg-gray-300 text-gray-500 cursor-not-allowed"
+                }`}
+              />
+              <Button
+                btnName={"Cancel"}
+                btnIcon={"IoCloseCircleOutline"}
+                type={"button"}
+                onClick={() => setIsLinkOpen(false)}
+                style="min-w-[100px] border border-red-500 text-red-500 mt-4 py-1 px-4"
+              />
+            </div>
+          </form>
+        </div>
+      </Modal>
+
+      <Modal
+        isOpen={ConfirmationAlert}
+        onClose={() => SetConfirmationAlert(false)}
+        heading={"Are You sure?"}
+      >
+        <div>
+          <p>Do you want to generate the payment link?</p>
+        </div>
+
+        <div className="flex justify-end gap-4 mt-2">
+          <Button
+            btnName="Yes"
+            btnIcon="FaLink"
+            type="button"
+            onClick={CollectionPaymentLink.submitForm}
+            style="min-w-[100px] md:w-auto mt-4 py-1 px-4 bg-success text-white"
+          />
+          <Button
+            btnName={"Cancel"}
+            btnIcon={"IoCloseCircleOutline"}
+            type={"button"}
+            onClick={() => {
+              (SetConfirmationAlert(false), setIsLinkOpen(true));
+            }}
+            style="min-w-[100px] border border-red-500 text-red-500 mt-4 py-1 px-4"
+          />
+        </div>
+      </Modal>
+
       {/* Update Payment */}
       {/* <Modal
         isOpen={IsEditColOpen}
@@ -1539,6 +2017,9 @@ function EMISchedule({ data, loan_Id, hideincollection, fetchData }) {
               <thead className="bg-gray-100 text-gray-700 uppercase text-xs tracking-wider">
                 <tr>
                   <th className="px-2 py-1 border-b text-nowrap">
+                    Cancel Presentment
+                  </th>
+                  <th className="px-2 py-1 border-b text-nowrap">
                     Collection Status
                   </th>
                   <th className="px-2 py-1 border-b text-nowrap">Mandate Id</th>
@@ -1592,6 +2073,20 @@ function EMISchedule({ data, loan_Id, hideincollection, fetchData }) {
                 {pullPaymentHistoriesData?.map((elm, index) => {
                   return (
                     <tr key={index} className="hover:bg-gray-50 transition">
+                      <td className="px-6 py-2 text-nowrap w-full">
+                        <button
+                          onClick={() => {
+                            setCancelData(elm);
+                            setisCancelOpen(true);
+                            setIsPullNach(false);
+                          }}
+                          disabled={elm?.presentment_id}
+                          className="flex items-center gap-1.5 bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 px-3 py-1 rounded-md text-xs font-semibold transition-all duration-200"
+                        >
+                          <Icon name="MdCancel" size={14} />
+                          <span>Cancel</span>
+                        </button>
+                      </td>
                       <td className="px-6 py-1 text-nowrap capitalize">
                         {elm?.collection_status}
                       </td>
@@ -2200,6 +2695,32 @@ function EMISchedule({ data, loan_Id, hideincollection, fetchData }) {
             />
           </div>
         </form>
+      </Modal>
+
+      <Modal isOpen={isCancelOpen} onClose={() => setisCancelOpen(false)}>
+        <div className="text-center font-semibold">
+          <h1>Are you sure want to Cancel Presentment?</h1>
+        </div>
+        <div className="flex justify-end gap-4 mt-2">
+          <Button
+            btnName="Yes"
+            btnIcon="IoCheckmarkCircleSharp"
+            type="button"
+            onClick={() => handleCancelPresentment()}
+            // disabled={formik.isSubmitting}
+            style="min-w-[80px] md:w-auto mt-4 py-1 px-4 border border-primary text-primary hover:border-success hover:bg-success hover:text-white hover:font-semibold"
+          />
+
+          <Button
+            btnName="No"
+            btnIcon="IoCloseCircleOutline"
+            type="button"
+            onClick={() => {
+              (setisCancelOpen(false), setIsPullNach(true));
+            }}
+            style="min-w-[80px] md:w-auto mt-4 py-0.5 px-4 border border-primary text-primary hover:border-dark hover:bg-dark hover:text-white hover:font-semibold"
+          />
+        </div>
       </Modal>
     </>
   );

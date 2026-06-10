@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import dayjs from "dayjs";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "react-toastify";
 import Personal from "../../components/form/Personal";
 import Employment from "../../components/form/Employment";
@@ -15,7 +15,12 @@ import BankInfo from "../../components/form/BankInfo";
 import Button from "../../components/utils/Button";
 import FormSidebar from "../../components/form/FormSidebar";
 import TabWrap from "../../components/utils/TabWrap";
-import { getLeadDetails, ReloanLead } from "../../api/ApiFunction";
+import {
+  CancelPresentment,
+  getLeadDetails,
+  GetPaymentLinkDetails,
+  ReloanLead,
+} from "../../api/ApiFunction";
 import Loader from "../../components/utils/Loader";
 import LeadHistory from "../../components/utils/LeadHistory";
 import EMISchedule from "../../components/utils/EMISchedule";
@@ -32,6 +37,7 @@ import ClosedCard from "../../components/utils/ClosedCard";
 import LoanHistory from "../../components/utils/LoanHistory";
 import OtherBankInfo from "../../components/form/OtherBankInfo";
 import MandateHistory from "../../components/utils/MandateHistory";
+import Icon from "../../components/utils/Icon";
 
 const ManageAppForm = () => {
   // const [openApporve, setOpenApporve] = useState(false);
@@ -39,9 +45,15 @@ const ManageAppForm = () => {
   const location = useLocation();
   const [userData, setUserData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
-  const lead_id = location.state?.lead_id;
-  const user_id = location.state?.user_id;
-  const loanId = location.state?.loan_id;
+  const [tableDataNew, setTableDataNew] = useState([]);
+  const [searchParams] = useSearchParams();
+
+  const [isCancelOpen, setisCancelOpen] = useState(false);
+  const [cancelData, setCancelData] = useState({});
+
+  const lead_id = location.state?.lead_id || searchParams.get("lead_id");
+  const user_id = location.state?.user_id || searchParams.get("user_id");
+  const loanId = location.state?.loan_id || searchParams.get("loan_id");
   const { adminUser } = useAuth();
   const { leadInfo, setLeadInfo } = useOpenLeadContext();
 
@@ -204,14 +216,62 @@ const ManageAppForm = () => {
     },
   });
 
+  const handleCancelPresentment = async () => {
+    setisCancelOpen(false);
+
+    if (!cancelData.transaction_id)
+      return toast.info("transaction_id is required!");
+
+    try {
+      const req = {
+        transaction_id: cancelData.transaction_id,
+      };
+      const response = await CancelPresentment(req);
+
+      if (response.status) {
+        toast.success(response.message || "Presentment canceled!");
+        fetchData();
+      } else {
+        toast.info(response.message || "Something went wrong!");
+      }
+    } catch (error) {
+      console.log("Error in handleCancelPresentment", error);
+      toast.error(error.message || "Something went wrong!");
+    }
+  };
+
   const renderError = (field) =>
     addProduct.touched[field] && addProduct.errors[field] ? (
       <div className="text-red-500 text-sm">{addProduct.errors[field]}</div>
     ) : null;
 
+  const fetchEMICollectionData = async () => {
+    try {
+      const response = await GetPaymentLinkDetails({
+        loan_id: userData?.getAssignProduct[0]?.loan_id,
+        lead_id: userData?.lead_id,
+      });
+
+      if (response.status) {
+        setTableDataNew(response.getPaymentLinkDetails || []);
+      }
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    }
+  };
+
+  useEffect(() => {
+    if (!userData?.getAssignProduct[0]?.loan_id || !userData?.lead_id) {
+      return;
+    }
+    fetchEMICollectionData();
+  }, [userData?.getAssignProduct[0]?.loan_id, userData?.lead_id]);
+
   if (isLoading) {
     return <Loader />;
   }
+
+  console.log(tableDataNew);
 
   if (!userData) {
     return <div>No data available</div>;
@@ -222,7 +282,14 @@ const ManageAppForm = () => {
       ? [
           {
             label: "EMI Schedule",
-            content: <EMISchedule data={userData} loan_Id={loanId} fetchData={fetchData} />,
+            content: (
+              <EMISchedule
+                fetchEMICollectionData={fetchEMICollectionData}
+                data={userData}
+                loan_Id={loanId}
+                fetchData={fetchData}
+              />
+            ),
           },
         ]
       : [
@@ -274,6 +341,286 @@ const ManageAppForm = () => {
     {
       label: "Mandate History",
       content: <MandateHistory data={userData} />,
+    },
+    ...(leadInfo?.lead_status !== 6
+      ? [
+          {
+            label: "Pull Payment History",
+            content: (
+              <>
+                {userData?.pullPaymentHistories?.length > 0 ? (
+                  <div className="overflow-x-auto border mt-8 broder-gray-50 rounded-md">
+                    <table className="min-w-full text-sm text-left border border-gray-500 rounded-md overflow-hidden shadow-sm text-center">
+                      <thead className="bg-gray-100 text-gray-700 uppercase text-xs tracking-wider">
+                        <tr>
+                          <th className="px-2 py-1 border-b text-nowrap">
+                            Cancel Presentment
+                          </th>
+                          <th className="px-2 py-1 border-b text-nowrap">
+                            Collection Status
+                          </th>
+                          <th className="px-2 py-1 border-b text-nowrap">
+                            Mandate Id
+                          </th>
+                          <th className="px-2 py-1 border-b text-nowrap">
+                            Provider
+                          </th>
+                          <th className="px-2 py-1 border-b text-nowrap">
+                            Amount
+                          </th>
+                          <th className="px-2 py-1 border-b text-nowrap">
+                            Collection Date
+                          </th>
+                          <th className="px-2 py-1 border-b text-nowrap">
+                            Comment
+                          </th>
+                          <th className="px-2 py-1 border-b text-nowrap">
+                            Request Created Date
+                          </th>
+                          <th className="px-2 py-1 border-b text-nowrap">
+                            Created by
+                          </th>
+                          <th className="px-2 py-1 border-b text-nowrap">
+                            Pull Amount
+                          </th>
+                          <th className="px-2 py-1 border-b text-nowrap">
+                            Message
+                          </th>
+                          <th className="px-2 py-1 border-b text-nowrap">
+                            Request Send Date/Time
+                          </th>
+                          <th className="px-2 py-1 border-b text-nowrap">
+                            Presentment Id
+                          </th>
+                          <th className="px-2 py-1 border-b text-nowrap">
+                            Presentment Date
+                          </th>
+                          <th className="px-2 py-1 border-b text-nowrap">
+                            Response Type
+                          </th>
+                          <th className="px-2 py-1 border-b text-nowrap">
+                            Transaction Ref. No.
+                          </th>
+                          <th className="px-2 py-1 border-b text-nowrap">
+                            Bank Ref. No.
+                          </th>
+                          <th className="px-2 py-1 border-b text-nowrap">
+                            Pull Status.
+                          </th>
+                          <th className="px-2 py-1 border-b text-nowrap">
+                            Bank Name
+                          </th>
+                          <th className="px-2 py-1 border-b text-nowrap">
+                            Account No
+                          </th>
+                          <th className="px-2 py-1 border-b text-nowrap">
+                            IFSC
+                          </th>
+                          <th className="px-2 py-1 border-b text-nowrap">
+                            Transaction Id
+                          </th>
+
+                          {/* <th className="px-2 py-1 border-b text-nowrap">Collection Time</th> */}
+                        </tr>
+                      </thead>
+
+                      <tbody className="divide-y divide-gray-200 border-gray-100">
+                        {userData?.pullPaymentHistories?.map((elm, index) => {
+                          return (
+                            <tr
+                              key={index}
+                              className="hover:bg-gray-50 transition"
+                            >
+                              <td className="px-6 py-2 text-nowrap w-full">
+                                <button
+                                  disabled={elm?.presentment_id}
+                                  onClick={() => {
+                                    setCancelData(elm);
+                                    setisCancelOpen(true);
+                                  }}
+                                  className="flex items-center gap-1.5 bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 px-3 py-1 rounded-md text-xs font-semibold transition-all duration-200"
+                                >
+                                  <Icon name="MdCancel" size={14} />
+                                  <span>Cancel</span>
+                                </button>
+                              </td>
+                              <td className="px-6 py-1 text-nowrap capitalize">
+                                {elm?.collection_status}
+                              </td>
+                              <td className="px-6 py-1 text-nowrap">
+                                {elm?.emandate_id}
+                              </td>
+                              <td className="px-6 py-1 text-nowrap">
+                                {elm?.provider}
+                              </td>
+                              <td className="px-6 py-1 text-nowrap">
+                                {elm?.amount}
+                              </td>
+                              <td className="px-6 py-1 text-nowrap">
+                                {elm?.collection_date}
+                              </td>
+                              <td className="px-6 py-1 text-nowrap">
+                                {elm?.comment}
+                              </td>
+                              <td className="px-6 py-1 text-nowrap">
+                                {elm?.request_created_date}
+                              </td>
+                              <td className="px-6 py-1 text-nowrap">
+                                {elm?.request_created_by}
+                              </td>
+                              <td className="px-6 py-1 text-nowrap">
+                                {elm?.pull_amount}
+                              </td>
+                              <td className="px-6 py-1 text-nowrap">
+                                {elm?.message}
+                              </td>
+                              <td className="px-6 py-1 text-nowrap">
+                                {elm?.request_send_datetime}
+                              </td>
+                              <td className="px-6 py-1 text-nowrap">
+                                {elm?.presentment_id}
+                              </td>
+                              <td className="px-6 py-1 text-nowrap">
+                                {elm?.presentment_date}
+                              </td>
+                              <td className="px-6 py-1 text-nowrap">
+                                {elm?.responce_type}
+                              </td>
+                              <td className="px-6 py-1 text-nowrap">
+                                {elm?.transaction_reference_number}
+                              </td>
+                              <td className="px-6 py-1 text-nowrap">
+                                {elm?.bank_reference_number}
+                              </td>
+                              <td className="px-6 py-1 text-nowrap">
+                                {elm?.job_pull_status}
+                              </td>
+                              <td className="px-6 py-1 text-nowrap">
+                                {elm?.bank_name}
+                              </td>
+                              <td className="px-6 py-1 text-nowrap">
+                                {elm?.customer_account_number}
+                              </td>
+                              <td className="px-6 py-1 text-nowrap">
+                                {elm?.customer_ifsc}
+                              </td>
+                              <td className="px-6 py-1 text-nowrap">
+                                {elm?.transaction_id}
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                ) : (
+                  <div className="text-sm text-gray-500 text-center py-10">
+                    <p>No Data Found!</p>
+                  </div>
+                )}
+              </>
+            ),
+          },
+        ]
+      : ""),
+
+    {
+      label: "Collection Payment Link",
+      content: (
+        <>
+          {tableDataNew.length > 0 ? (
+            <div className="relative overflow-x-auto sm:rounded-lg mt-10">
+              <table className="w-full text-sm text-center text-slate-800 mb-5">
+                <thead className="text-xs text-white font-bold bg-primary">
+                  <tr>
+                    <th className="px-6 py-2">#</th>
+                    {/* <th className="px-6 py-2">Name</th>
+                    <th className="px-6 py-2">Email</th>
+                    <th className="px-6 py-2">Phone</th> */}
+                    <th className="px-6 py-2">Amount</th>
+                    {/* <th className="px-6 py-2">Vendor</th> */}
+                    {/* <th className="px-6 py-2">Lead ID</th>
+                    <th className="px-6 py-2">Loan ID</th> */}
+                    <th className="px-6 py-2">Message</th>
+                    <th className="px-6 py-2">Expiry</th>
+                    <th className="px-6 py-2">Collection Status</th>
+                    <th className="px-6 py-2">Settled Amount</th>
+                    <th className="px-6 py-2">Payment Status</th>
+                    <th className="px-6 py-2">Transaction ID</th>
+                    <th className="px-6 py-2">Created On</th>
+                    <th className="px-6 py-2">Created By</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {tableDataNew?.map((item, index) => (
+                    <tr
+                      key={index}
+                      className={`border-b border-slate-200 ${
+                        index % 2 === 0 ? "bg-gray-100" : "bg-white"
+                      }`}
+                    >
+                      <td className="px-6 py-2">{index + 1}</td>
+
+                      {/* <td className="px-6 py-2">{item.name || "--"}</td>
+                      <td className="px-6 py-2">{item.email || "--"}</td>
+                      <td className="px-6 py-2">{item.phone || "--"}</td> */}
+                      <td className="px-6 py-2">₹ {item.amount || "0"}</td>
+                      {/* <td className="px-6 py-2">{item.vandor_code || "--"}</td> */}
+                      {/* <td className="px-6 py-2">{item.lead_id || "--"}</td> */}
+                      {/* <td className="px-6 py-2">{item.loan_id || "--"}</td> */}
+                      <td className="px-6 py-2">{item.message || "--"}</td>
+
+                      <td className="px-6 py-2">
+                        {item.expiry_date
+                          ? new Date(item.expiry_date).toLocaleDateString()
+                          : "--"}
+                      </td>
+
+                      <td className="px-6 py-2">
+                        {item.collection_status || "--"}
+                      </td>
+
+                      <td className="px-6 py-2">
+                        ₹ {item.settled_amount || "0"}
+                      </td>
+
+                      {/* Payment Status Badge */}
+                      <td className="px-6 py-2">
+                        <span
+                          className={`px-2 py-1 rounded text-xs ${
+                            item.payment_status === "success"
+                              ? "bg-green-100 text-green-700"
+                              : "bg-red-100 text-red-700"
+                          }`}
+                        >
+                          {item.payment_status || "--"}
+                        </span>
+                      </td>
+
+                      <td className="px-6 py-2 text-xs break-all">
+                        {item.transaction_id || "--"}
+                      </td>
+
+                      <td className="px-6 py-2">
+                        {item.createdOn
+                          ? new Date(item.createdOn).toLocaleString()
+                          : "--"}
+                      </td>
+                      <td className="px-6 py-2 text-xs break-all text-nowrap">
+                        {item.createdBy || "--"}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <div className="flex justify-center items-center h-64">
+              <p>No data available</p>
+            </div>
+          )}
+        </>
+      ),
     },
   ];
 
@@ -473,6 +820,32 @@ const ManageAppForm = () => {
               />
             </div>
           </form>
+        </div>
+      </Modal>
+
+      <Modal isOpen={isCancelOpen} onClose={() => setisCancelOpen(false)}>
+        <div className="text-center font-semibold">
+          <h1>Are you sure want to Cancel Presentment?</h1>
+        </div>
+        <div className="flex justify-end gap-4 mt-2">
+          <Button
+            btnName="Yes"
+            btnIcon="IoCheckmarkCircleSharp"
+            type="button"
+            onClick={() => handleCancelPresentment()}
+            // disabled={formik.isSubmitting}
+            style="min-w-[80px] md:w-auto mt-4 py-1 px-4 border border-primary text-primary hover:border-success hover:bg-success hover:text-white hover:font-semibold"
+          />
+
+          <Button
+            btnName="No"
+            btnIcon="IoCloseCircleOutline"
+            type="button"
+            onClick={() => {
+              setisCancelOpen(false);
+            }}
+            style="min-w-[80px] md:w-auto mt-4 py-0.5 px-4 border border-primary text-primary hover:border-dark hover:bg-dark hover:text-white hover:font-semibold"
+          />
         </div>
       </Modal>
     </>

@@ -22,7 +22,8 @@ const Login = () => {
   const [ipAddress, setIPAddress] = useState("");
   const [loading, setLoading] = useState(false);
   const [location, setLoaction] = useState({
-    lat: "", long : ""
+    lat: "",
+    long: "",
   });
   const { login } = useAuth();
   const navigate = useNavigate();
@@ -45,7 +46,6 @@ const Login = () => {
     }
   };
 
-  
   //-----------------------
   //Get Users Location
   //-----------------------
@@ -75,8 +75,19 @@ const Login = () => {
   //   }
   // };
 
-   const getUserLocation = () => {
+  const getUserLocation = () => {
     return new Promise((resolve, reject) => {
+      const host = window.location.hostname;
+
+      // 🎯 Specific IP check
+      if (host === "10.0.0.20") {
+        return resolve({
+          lat: 28.6139, // 👈 apna static lat
+          long: 77.209, // 👈 apna static long
+          type: "static",
+        });
+      }
+
       if (!navigator.geolocation) {
         reject("Geolocation not supported");
         return;
@@ -99,7 +110,6 @@ const Login = () => {
   useEffect(() => {
     // getUserLocation();
   }, []);
-  
 
   //Login Form Handle
   const formik = useFormik({
@@ -112,6 +122,7 @@ const Login = () => {
       password: Yup.string().required("Password Required"),
     }),
     onSubmit: async ({ userName, password }) => {
+      const host = window.location.hostname;
       setLoading(true);
 
       try {
@@ -120,7 +131,7 @@ const Login = () => {
           name: "geolocation",
         });
 
-        if (permission.state === "denied") {
+        if (host != "10.0.0.20" && permission.state === "denied") {
           toast.info(
             "Location is blocked. Please enable it from browser settings.",
           );

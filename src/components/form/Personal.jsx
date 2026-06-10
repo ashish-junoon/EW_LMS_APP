@@ -161,6 +161,7 @@ const PersonalInfo = ({ btnEnable = false, incomplete }) => {
       } finally {
         setSubmitting(false);
         setOpenApprove(false);
+        setIsLoading(false)
       }
     },
   });

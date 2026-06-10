@@ -16,29 +16,29 @@ import * as Hi from 'react-icons/hi';
 const Icon = ({ name, size = 24, color = 'currentColor', style = {} }) => {
     let IconComponent;
 
-    if (name.startsWith('Ri')) {
+    if (name?.startsWith('Ri')) {
         IconComponent = Ri[name];
-    } else if (name.startsWith('Md')) {
+    } else if (name?.startsWith('Md')) {
         IconComponent = Md[name];
-    } else if (name.startsWith('Io')) {
+    } else if (name?.startsWith('Io')) {
         IconComponent = Io[name];
-    } else if (name.startsWith('Gi')) {
+    } else if (name?.startsWith('Gi')) {
         IconComponent = Gi[name];
-    } else if (name.startsWith('Pi')) {
+    } else if (name?.startsWith('Pi')) {
         IconComponent = Pi[name];
-    } else if (name.startsWith('Go')) {
+    } else if (name?.startsWith('Go')) {
         IconComponent = Go[name];
-    } else if (name.startsWith('Ci')) {
+    } else if (name?.startsWith('Ci')) {
         IconComponent = Ci[name];
-    } else if (name.startsWith('Gr')) {
+    } else if (name?.startsWith('Gr')) {
         IconComponent = Gr[name];
-    }else if (name.startsWith('Fa')) {
+    }else if (name?.startsWith('Fa')) {
         IconComponent = Fa[name];
-    }else if (name.startsWith('Tb')) {
+    }else if (name?.startsWith('Tb')) {
         IconComponent = Tb[name];
-    }else if (name.startsWith('Ti')) {
+    }else if (name?.startsWith('Ti')) {
         IconComponent = Ti[name];
-    }else if (name.startsWith('Hi')) {
+    }else if (name?.startsWith('Hi')) {
         IconComponent = Hi[name];
     }
     // Add more conditions for other icon sets

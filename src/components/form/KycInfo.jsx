@@ -11,6 +11,7 @@ import {
   ResubmitApp,
   UpdateIncompleteUserApp,
   getInCompleteLeadDetails,
+  getLeadDocuments,
 } from "../../api/ApiFunction";
 import Accordion from "../utils/Accordion";
 import { FileConverter } from "../utils/FileConverter";
@@ -177,10 +178,11 @@ const KycInfo = ({ btnEnable = false, incomplete }) => {
             ...prev,
             ...response,
           }));
-          setDocuments((prev) => ({
-            ...prev,
-            aadhaar_pan: [aadhaar_pan],
-          }));
+          // setDocuments((prev) => ({
+          //   ...prev,
+          //   aadhaar_pan: [aadhaar_pan],
+          // }));
+          FetchDocData();
 
           toast.success(response.message);
           setIsEditing(false);
@@ -205,9 +207,9 @@ const KycInfo = ({ btnEnable = false, incomplete }) => {
         } else {
           toast.error(response.message || "Update failed");
         }
-        setTimeout(() => {
-          window.location.reload();
-        }, 1000);
+        // setTimeout(() => {
+        //   window.location.reload();
+        // }, 1000);
         setIsLoading(false);
       } catch (error) {
         // toast.error('Something went wrong. Please try again.');
@@ -217,6 +219,19 @@ const KycInfo = ({ btnEnable = false, incomplete }) => {
       }
     },
   });
+
+  const FetchDocData = async () => {
+    try {
+      const response = await getLeadDocuments({
+        user_id: leadInfo.user_id,
+        lead_id: leadInfo.lead_id,
+      });
+
+      setDocuments(response);
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   const handleFileChange = (fieldName) => (event) => {
     const file = event.currentTarget.files[0];
@@ -318,8 +333,8 @@ const KycInfo = ({ btnEnable = false, incomplete }) => {
         isEditing
           ? "Cancel"
           : leadStatus === 1
-          ? "Edit KYC Info"
-          : "Update & Verify"
+            ? "Edit KYC Info"
+            : "Update & Verify"
       }
       verified={leadInfo?.kyc_info_verified}
       reset={leadInfo?.kyc_info_fill}
@@ -348,8 +363,8 @@ const KycInfo = ({ btnEnable = false, incomplete }) => {
                 icon: isEditing
                   ? "IoClose"
                   : leadStatus === 1
-                  ? "RiEdit2Fill"
-                  : "MdOutlineCheckCircle",
+                    ? "RiEdit2Fill"
+                    : "MdOutlineCheckCircle",
                 onClick: handleEdit,
                 className: isEditing
                   ? "border border-danger text-danger hover:bg-danger hover:border-danger hover:text-white"
@@ -372,7 +387,10 @@ const KycInfo = ({ btnEnable = false, incomplete }) => {
                 disabled={!isEditing}
                 // onChange={formik.handleChange}
                 onChange={(e) => {
-                  formik.setFieldValue("panNumber", e.target.value.toUpperCase());
+                  formik.setFieldValue(
+                    "panNumber",
+                    e.target.value.toUpperCase(),
+                  );
                 }}
                 onBlur={formik.handleBlur}
                 value={formik.values.panNumber}

@@ -14,6 +14,7 @@ import {
   getInCompleteLeadDetails,
   VerifyBankDetails,
   VerifyIFSC,
+  getLeadDocuments,
 } from "../../api/ApiFunction";
 import Accordion from "../utils/Accordion";
 import Modal from "../utils/Modal";
@@ -269,10 +270,11 @@ const BankInfo = ({ btnEnable = false, incomplete }) => {
             ...prev,
             ...response,
           }));
-          setDocuments((prev) => ({
-            ...prev,
-            bank_statement: [salarySlip],
-          }));
+          // setDocuments((prev) => ({
+          //   ...prev,
+          //   bank_statement: [salarySlip],
+          // }));
+          FetchDocData()
           toast.success(response.message);
           setIsEditing(false);
 
@@ -295,9 +297,9 @@ const BankInfo = ({ btnEnable = false, incomplete }) => {
           toast.error(response.message);
         }
         setIsLoading(false);
-        setTimeout(() => {
-          window.location.reload();
-        }, 1000);
+        // setTimeout(() => {
+        //   window.location.reload();
+        // }, 1000);
       } catch (error) {
         toast.error("Something went wrong. Please try again.");
         console.error("Error updating bank info:", error);
@@ -373,6 +375,19 @@ const BankInfo = ({ btnEnable = false, incomplete }) => {
   const handleAcceptNo = () => {
     setOpenApprove(false);
   };
+
+  const FetchDocData = async () => {
+      try {
+        const response = await getLeadDocuments({
+          user_id: leadInfo.user_id,
+          lead_id: leadInfo.lead_id,
+        });
+  
+        setDocuments(response);
+      } catch (error) {
+        console.log(error)
+      }
+    };
 
   if (isLoading) {
     return <Loader />;

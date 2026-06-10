@@ -178,9 +178,9 @@ const houseTypeOptions = [
 ]
 
 const scorePlatform = [
-    { label: "Transunion", value: "Transunion" },
     { label: "Experian", value: "Experian" },
-    // { label: "Crif", value: "Crif" },
+    { label: "Crif", value: "Crif" },
+    { label: "Transunion", value: "Transunion" },
     // { label: "Equifax", value: "Equifax" },
 ]
 
@@ -231,6 +231,18 @@ const addRemarkOptions = [
     { label: "Call Disconnected", value: "Call Disconnected" },
     { label: "Wrong Number", value: "Wrong Number" },
     { label: "Requested Call Back", value: "Requested Call Back" },
+];
+
+const addRemarkOptionsNew = [
+    { label: "Follow-up", value: "Follow-up" },
+    { label: "Requested Call Back", value: "Requested Call Back" },
+];
+
+const MoveRemarkOptions = [
+    // { label: "Move Lead back", value: "Move Lead back" },
+    { label: "Invalid Credit Details", value: "Invalid Credit Details" },
+    { label: "ReCreating Product", value: "ReCreating Product" },
+    { label: "Customer Requested to add Bank Details.", value: "Customer Requested to add Bank Details." },
 ];
 
 
@@ -390,9 +402,23 @@ const disburesementMode = [
 const emiStaus = [
     { label: "Settled", value: "12" },
     { label: "Fully Paid", value: "10" },
-    { label: "Write-Off", value: "13" },
+    { label: "Waive-Off", value: "15" },
     { label: "Partially Paid", value: "6" },
     { label: "Foreclosed", value: "11" },
+]
+
+const emiStausforlink = [
+    // { label: "Settled", value: "12" },
+    // { label: "Write-Off", value: "15" },
+    { label: "Partially Paid", value: "6" },
+    // { label: "Waive-Off", value: "15" }
+]
+
+const emiStausforlinkforAdmin = [
+    { label: "Settled", value: "12" },
+    // { label: "Write-Off", value: "15" },
+    { label: "Partially Paid", value: "6" },
+    { label: "Waive-Off", value: "15" }
 ]
 
 const relationOptions = [
@@ -6151,4 +6177,4 @@ const stateCodelist = [
 
 
 
-export { stateCodelist, paymentType, notifyItems, steperItems, houseTypeOptions, genderOptions, maritalStatusOptions, features, leadRemarks, actionType, branchList, assignStatus, kycStatus, disbursalStatus, emiStatus, collectionStatus, manageApp, qcStatus, leadStatus, creditApprovalStatus, creditApprovalRemarks, loanStatus, collectionPaymentMode, relationOptions, userStatus, userRole, nameTitle, assessmentRemarks, paymentMode, educationOptions, emplyeeType, productType, repaymentFrequency, loanTenure, interestType, scorePlatform, documentType, emiStaus, leadStep1, rejectLead, eKYCRemarks, disbursedRemarks, addRemarkOptions, exportDataType, exportLeadSource, exportStatusSource, exportCollectionSource, disburesementMode };
+export { stateCodelist, paymentType, notifyItems, steperItems, houseTypeOptions, genderOptions, maritalStatusOptions, features, leadRemarks, actionType, branchList, assignStatus, kycStatus, disbursalStatus, emiStatus, collectionStatus, manageApp, qcStatus, leadStatus, creditApprovalStatus, creditApprovalRemarks, loanStatus, collectionPaymentMode, relationOptions, userStatus, userRole, nameTitle, assessmentRemarks, paymentMode, educationOptions, emplyeeType, productType, repaymentFrequency, loanTenure, interestType, scorePlatform, documentType, emiStaus, emiStausforlink, emiStausforlinkforAdmin, leadStep1, rejectLead, eKYCRemarks, disbursedRemarks, addRemarkOptions,addRemarkOptionsNew, MoveRemarkOptions, exportDataType, exportLeadSource, exportStatusSource, exportCollectionSource, disburesementMode };

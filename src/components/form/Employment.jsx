@@ -13,6 +13,7 @@ import {
   ResubmitApp,
   UpdateIncompleteUserApp,
   getInCompleteLeadDetails,
+  getLeadDocuments,
 } from "../../api/ApiFunction";
 import { FileConverter } from "../utils/FileConverter";
 import Modal from "../utils/Modal";
@@ -67,7 +68,7 @@ const Employment = ({ btnEnable = false, incomplete }) => {
             // If no file is selected, pass validation (it's optional)
             if (!value) return true;
             return value.size <= 5 * 1024 * 1024;
-          }
+          },
         ),
     }),
     onSubmit: async (values, { setSubmitting }) => {
@@ -147,10 +148,11 @@ const Employment = ({ btnEnable = false, incomplete }) => {
             ...response,
           }));
 
-          setDocuments((prev) => ({
-            ...prev,
-            salary_slip: [salaryPdf],
-          }));
+          // setDocuments((prev) => ({
+          //   ...prev,
+          //   salary_slip: [salaryPdf],
+          // }));
+          FetchDocData();
           toast.success(response.message);
           setIsEditing(false);
           // console.log([salaryPdf]);
@@ -175,9 +177,9 @@ const Employment = ({ btnEnable = false, incomplete }) => {
           toast.error(response.message);
         }
 
-        setTimeout(() => {
-          window.location.reload();
-        }, 1000);
+        // setTimeout(() => {
+        //   window.location.reload();
+        // }, 1000);
         setIsLoading(false);
       } catch (error) {
         toast.error("Something went wrong. Please try again.");
@@ -189,6 +191,19 @@ const Employment = ({ btnEnable = false, incomplete }) => {
       }
     },
   });
+
+  const FetchDocData = async () => {
+    try {
+      const response = await getLeadDocuments({
+        user_id: leadInfo.user_id,
+        lead_id: leadInfo.lead_id,
+      });
+
+      setDocuments(response);
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   // Set initial file value after component mounts
   useEffect(() => {
@@ -240,8 +255,8 @@ const Employment = ({ btnEnable = false, incomplete }) => {
         isEditing
           ? "Cancel"
           : leadStatus === 1
-          ? "Edit Employment Info"
-          : "Update & Verify"
+            ? "Edit Employment Info"
+            : "Update & Verify"
       }
       verified={leadInfo?.employment_info_verified}
       // reset={leadInfo?.gurantor_nominee_fill}
@@ -272,8 +287,8 @@ const Employment = ({ btnEnable = false, incomplete }) => {
                 icon: isEditing
                   ? "IoClose"
                   : leadStatus === 1
-                  ? "RiEdit2Fill"
-                  : "MdOutlineCheckCircle",
+                    ? "RiEdit2Fill"
+                    : "MdOutlineCheckCircle",
                 onClick: handleEdit,
                 className: isEditing
                   ? "border border-danger text-danger hover:bg-danger hover:border-danger hover:text-white"
@@ -434,7 +449,7 @@ const Employment = ({ btnEnable = false, incomplete }) => {
               </div>
             )}
 
-            {(!isEditing && docData?.salary_slip_pdf_data_url) && (
+            {!isEditing && docData?.salary_slip_pdf_data_url && (
               <div className="col-span-2 max-md:col-span-3">
                 {!funder && (
                   <DownloadDoc
