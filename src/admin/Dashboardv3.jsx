@@ -29,8 +29,10 @@ const Dashboardv3 = () => {
   const [tabNamesFilter, setTabName] = useState("RM Report");
   const [graphData, setGraphData] = useState([]);
 
-  const {adminUser} = useAuth()
-    const isAdmin = adminUser?.role?.toLowerCase() == "admin" || adminUser?.role?.toLowerCase() == "administrator"
+  const { adminUser } = useAuth();
+  const isAdmin =
+    adminUser?.role?.toLowerCase() == "admin" ||
+    adminUser?.role?.toLowerCase() == "administrator";
 
   const [dashboardData, setDashboardData] = useState({
     SummeryRepoprtData: [],
@@ -326,46 +328,50 @@ const Dashboardv3 = () => {
         </div>
 
         {/* Right Side */}
-        {isAdmin && <div>
-          {dashboardData.kpiDashboardReports?.length > 0 && (
-            <CardList
-              title="KPI Dashboard"
-              data={dashboardData?.kpiDashboardReports}
-            />
-          )}
-        </div>}
+        {isAdmin && (
+          <div>
+            {dashboardData.kpiDashboardReports?.length > 0 && (
+              <CardList
+                title="KPI Dashboard"
+                data={dashboardData?.kpiDashboardReports}
+              />
+            )}
+          </div>
+        )}
       </div>
 
       {/* 📊 MAIN GRID */}
-      {isAdmin && <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
-        {/* Summary */}
-        <div className="lg:col-span-2 bg-white rounded-lg shadow-sm border p-4">
-          <h3 className="text-sm font-semibold text-gray-800 mb-2">
-            Summary Report
-          </h3>
+      {isAdmin && (
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
+          {/* Summary */}
+          <div className="lg:col-span-2 bg-white rounded-lg shadow-sm border p-4">
+            <h3 className="text-sm font-semibold text-gray-800 mb-2">
+              Summary Report
+            </h3>
 
-          {dashboardData.SummeryRepoprtData?.length > 0 && (
-            <ModernTable data={dashboardData?.SummeryRepoprtData} />
-          )}
+            {dashboardData.SummeryRepoprtData?.length > 0 && (
+              <ModernTable data={dashboardData?.SummeryRepoprtData} />
+            )}
+          </div>
+
+          {/* Side Cards */}
+          <div className="space-y-3">
+            {dashboardData.operationalMISReports?.length > 0 && (
+              <CardList
+                title="Operational MIS"
+                data={dashboardData?.operationalMISReports}
+              />
+            )}
+
+            {dashboardData.revenueReport?.length > 0 && (
+              <CardList
+                title="Revenue Report"
+                data={dashboardData?.revenueReport}
+              />
+            )}
+          </div>
         </div>
-
-        {/* Side Cards */}
-        <div className="space-y-3">
-          {dashboardData.operationalMISReports?.length > 0 && (
-            <CardList
-              title="Operational MIS"
-              data={dashboardData?.operationalMISReports}
-            />
-          )}
-
-          {dashboardData.revenueReport?.length > 0 && (
-            <CardList
-              title="Revenue Report"
-              data={dashboardData?.revenueReport}
-            />
-          )}
-        </div>
-      </div>}
+      )}
 
       {/* 🧭 TABS */}
       <p className="font-semibold text-gray-600 text-sm px-2">Today's Report</p>
@@ -477,13 +483,80 @@ const Dashboardv3 = () => {
   );
 };
 
+// const ModernTable = ({ data, highlightLastRow }) => {
+//   const headers = Object.keys(data[0]);
+
+//   return (
+//     <div className="overflow-hidden rounded-md border border-gray-200">
+//       <table className="w-full text-sm">
+//         {/* HEADER */}
+//         <thead className="bg-gradient-to-r from-primary to-[#1e6087]">
+//           <tr>
+//             {headers?.map((head, i) => (
+//               <th
+//                 key={i}
+//                 className="px-4 py-2 text-left text-xs font-bold text-gray-100 uppercase tracking-wide"
+//               >
+//                 {head.replaceAll("_", " ")}
+//               </th>
+//             ))}
+//           </tr>
+//         </thead>
+
+//         {/* BODY */}
+//         <tbody className="divide-y divide-gray-100">
+//           {data?.map((row, i) => {
+//             const isLast = i === data.length - 1;
+//             const isStrip = i % 2 == 0;
+
+//             return (
+//               <tr
+//                 key={i}
+//                 className={`${isStrip ? "bg-white" : "bg-gray-200/80"} transition hover:bg-primary/5 ${
+//                   highlightLastRow && isLast ? "!bg-gray-300 font-semibold" : ""
+//                 }`}
+//               >
+//                 {Object?.values(row)?.map((val, j) => (
+//                   <td key={j} className="px-4 py-1.5 text-gray-700">
+//                     {val}
+//                   </td>
+//                 ))}
+//               </tr>
+//             );
+//           })}
+//         </tbody>
+//       </table>
+//     </div>
+//   );
+// };
+
 const ModernTable = ({ data, highlightLastRow }) => {
   const headers = Object.keys(data[0]);
-  
+
+  function formatNumber(num) {
+    const sign = num < 0 ? "-" : "";
+    const absNum = Math.abs(num);
+
+    if (absNum >= 10000000) {
+      return sign + (absNum / 10000000).toFixed(2) + "CR";
+    } else if (absNum >= 100000) {
+      return sign + (absNum / 100000).toFixed(2) + "L";
+    } else if (absNum >= 1000) {
+      return sign + (absNum / 1000).toFixed(2) + "K";
+    } else {
+      return sign + absNum.toString();
+    }
+  }
+
+  const isIncludes = [
+    "Total Disbursement Amount",
+    "Portfolio Outstanding",
+    "Average Ticket Size"
+  ];
+
   return (
     <div className="overflow-hidden rounded-md border border-gray-200">
       <table className="w-full text-sm">
-        {/* HEADER */}
         <thead className="bg-gradient-to-r from-primary to-[#1e6087]">
           <tr>
             {headers?.map((head, i) => (
@@ -497,11 +570,12 @@ const ModernTable = ({ data, highlightLastRow }) => {
           </tr>
         </thead>
 
-        {/* BODY */}
         <tbody className="divide-y divide-gray-100">
           {data?.map((row, i) => {
             const isLast = i === data.length - 1;
             const isStrip = i % 2 == 0;
+
+            const isTargetRow = isIncludes.includes(row.particulars);
 
             return (
               <tr
@@ -510,11 +584,20 @@ const ModernTable = ({ data, highlightLastRow }) => {
                   highlightLastRow && isLast ? "!bg-gray-300 font-semibold" : ""
                 }`}
               >
-                {Object?.values(row)?.map((val, j) => (
-                  <td key={j} className="px-4 py-1.5 text-gray-700">
-                    {val}
-                  </td>
-                ))}
+                {Object.entries(row).map(([key, val], j) => {
+                  let updatedValue = val;
+
+                  // 🎯 YAHAN CHANGE KARO VALUE
+                  if (isTargetRow && key !== "particulars") {
+                    updatedValue = formatNumber(val); // example: format number
+                  }
+
+                  return (
+                    <td key={j} className="px-4 py-1.5 text-gray-700">
+                      {updatedValue}
+                    </td>
+                  );
+                })}
               </tr>
             );
           })}
@@ -525,6 +608,22 @@ const ModernTable = ({ data, highlightLastRow }) => {
 };
 
 const CardList = ({ title, data }) => {
+
+  function formatNumber(num) {
+    const sign = num < 0 ? "-" : "";
+    const absNum = Math.abs(num);
+
+    if (absNum >= 10000000) {
+      return sign + (absNum / 10000000).toFixed(2) + "CR";
+    } else if (absNum >= 100000) {
+      return sign + (absNum / 100000).toFixed(2) + "L";
+    } else if (absNum >= 1000) {
+      return sign + (absNum / 1000).toFixed(2) + "K";
+    } else {
+      return sign + absNum.toString();
+    }
+  }
+
   return (
     <div className="bg-gradient-to-b from-primary/10 to-primary/15 p-4 rounded-md shadow-sm border">
       <h3 className="text-sm font-semibold text-gray-700 mb-3 border-b border-gray-300 pb-2">
@@ -542,7 +641,7 @@ const CardList = ({ title, data }) => {
             </p>
 
             <p className="font-semibold text-sm text-gray-800">
-              {item.count || item.amount || item.value || "- -"}
+              {item.count || (item.amount ? formatNumber(item.amount) : item.amount) || item.value || "- -"}
             </p>
           </div>
         ))}
