@@ -30,9 +30,9 @@ const Dashboardv3 = () => {
   const [graphData, setGraphData] = useState([]);
 
   const { adminUser } = useAuth();
+  const isAdministator = adminUser?.role?.toLowerCase() == "administrator";
   const isAdmin =
-    adminUser?.role?.toLowerCase() == "admin" ||
-    adminUser?.role?.toLowerCase() == "administrator";
+    adminUser?.role?.toLowerCase() == "admin"
 
   const [dashboardData, setDashboardData] = useState({
     SummeryRepoprtData: [],
@@ -328,7 +328,7 @@ const Dashboardv3 = () => {
         </div>
 
         {/* Right Side */}
-        {isAdmin && (
+        {/* {isAdmin || isAdministator && ( */}
           <div>
             {dashboardData.kpiDashboardReports?.length > 0 && (
               <CardList
@@ -337,11 +337,11 @@ const Dashboardv3 = () => {
               />
             )}
           </div>
-        )}
+        {/* )}a */}
       </div>
 
       {/* 📊 MAIN GRID */}
-      {isAdmin && (
+      {isAdministator && (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
           {/* Summary */}
           <div className="lg:col-span-2 bg-white rounded-lg shadow-sm border p-4">
@@ -374,66 +374,68 @@ const Dashboardv3 = () => {
       )}
 
       {/* 🧭 TABS */}
-      <p className="font-semibold text-gray-600 text-sm px-2">Today's Report</p>
       {/* <p className="font-semibold text-gray-600 text-sm px-2"> */}
       {/* {startDate?.split("-")[2] == endDate?.split("-")[2] ? "Todays Report" : startDate + " - " + endDate} */}
       {/* </p> */}
 
       {/* 📋 TABLE SECTION */}
-      <div className="bg-white rounded-lg shadow-sm border p-4">
-        <div className="bg-white p-2 rounded-lg shadow-sm border flex flex-wrap gap-2">
-          {Tabs?.map((btn, index) => {
-            const isActive = btn === tabNamesFilter;
+      {isAdministator && <>
+        <p className="font-semibold text-gray-600 text-sm px-2">Today's Report</p>
+        <div className="bg-white rounded-lg shadow-sm border p-4">
+          <div className="bg-white p-2 rounded-lg shadow-sm border flex flex-wrap gap-2">
+            {Tabs?.map((btn, index) => {
+              const isActive = btn === tabNamesFilter;
 
-            return (
-              <button
-                key={index}
-                onClick={() => setTabName(btn)}
-                className={`px-4 py-1.5 text-sm rounded-md transition ${
-                  isActive
-                    ? "bg-primary text-white"
-                    : "text-gray-600 hover:bg-gray-100"
-                }`}
-              >
-                {btn}
-              </button>
-            );
-          })}
+              return (
+                <button
+                  key={index}
+                  onClick={() => setTabName(btn)}
+                  className={`px-4 py-1.5 text-sm rounded-md transition ${
+                    isActive
+                      ? "bg-primary text-white"
+                      : "text-gray-600 hover:bg-gray-100"
+                  }`}
+                >
+                  {btn}
+                </button>
+              );
+            })}
+          </div>
+
+          <h3 className="text-sm font-semibold text-gray-800 my-2">
+            {tabNamesFilter}
+          </h3>
+
+          {tabNamesFilter === "RM Report" &&
+            dashboardData.LeadReportData?.length > 0 && (
+              <ModernTable data={dashboardData.LeadReportData} highlightLastRow />
+            )}
+
+          {tabNamesFilter === "Credit Report" &&
+            dashboardData.dailyCreditReports?.length > 0 && (
+              <ModernTable
+                data={dashboardData.dailyCreditReports}
+                highlightLastRow
+              />
+            )}
+
+          {tabNamesFilter === "Disbursement Reports" &&
+            dashboardData.dailyDisbursementReports?.length > 0 && (
+              <ModernTable
+                data={dashboardData.dailyDisbursementReports}
+                highlightLastRow
+              />
+            )}
+
+          {tabNamesFilter === "Collection Performance Sheets" &&
+            dashboardData.collectionPerformanceSheets?.length > 0 && (
+              <ModernTable
+                data={dashboardData.collectionPerformanceSheets}
+                highlightLastRow
+              />
+            )}
         </div>
-
-        <h3 className="text-sm font-semibold text-gray-800 my-2">
-          {tabNamesFilter}
-        </h3>
-
-        {tabNamesFilter === "RM Report" &&
-          dashboardData.LeadReportData?.length > 0 && (
-            <ModernTable data={dashboardData.LeadReportData} highlightLastRow />
-          )}
-
-        {tabNamesFilter === "Credit Report" &&
-          dashboardData.dailyCreditReports?.length > 0 && (
-            <ModernTable
-              data={dashboardData.dailyCreditReports}
-              highlightLastRow
-            />
-          )}
-
-        {tabNamesFilter === "Disbursement Reports" &&
-          dashboardData.dailyDisbursementReports?.length > 0 && (
-            <ModernTable
-              data={dashboardData.dailyDisbursementReports}
-              highlightLastRow
-            />
-          )}
-
-        {tabNamesFilter === "Collection Performance Sheets" &&
-          dashboardData.collectionPerformanceSheets?.length > 0 && (
-            <ModernTable
-              data={dashboardData.collectionPerformanceSheets}
-              highlightLastRow
-            />
-          )}
-      </div>
+      </>}
 
       {/* ChartS  */}
       {/* <div className="mt-6">
