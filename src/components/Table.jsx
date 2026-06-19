@@ -78,7 +78,7 @@ const Table = ({ columns, data, title, handleFilter, pagination = true, selectab
                             </div>
 
                             <div>
-                                {exportable === true && isAdmin && (
+                                {exportable === true && (
                                     <CSVLink
                                         data={csvData ? csvData : filteredData}
                                         filename={filename ? filename : "export.csv"}
