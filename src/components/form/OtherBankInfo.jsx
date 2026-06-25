@@ -138,9 +138,14 @@ const OtherBankInfo = ({
       secondarybankinfo: Yup.array().of(
         Yup.object({
           bankName: Yup.string().required("Bank name is required."),
+          // accountHolder: Yup.string()
+          //   .min(3, "Must be at least 3 characters.")
+          //   .max(50, "Must be 50 characters or less.")
+          //   .required("Account holder name is required."),
           accountHolder: Yup.string()
             .min(3, "Must be at least 3 characters.")
             .max(50, "Must be 50 characters or less.")
+            .matches(/^[A-Za-z\s]+$/, "Invalid account holder name.")
             .required("Account holder name is required."),
           accountNumber: Yup.string()
             .matches(
@@ -418,7 +423,7 @@ const OtherBankInfo = ({
         flag: "2",
         company_id: import.meta.env.VITE_COMPANY_ID,
         product_name: import.meta.env.VITE_PRODUCT_NAME,
-        updated_by: adminUser?.emp_code
+        updated_by: adminUser?.emp_code,
       };
 
       const response = await SwitchBank(req);
@@ -434,8 +439,8 @@ const OtherBankInfo = ({
     } catch (error) {
       console.log(error);
       toast.error(error || "Something went wrong!");
-    }finally{
-      setisSubmittingSwitch(false)
+    } finally {
+      setisSubmittingSwitch(false);
     }
   };
 
@@ -538,6 +543,15 @@ const OtherBankInfo = ({
                           ?.accountNumber || ""
                       }
                     />
+                    {formik.touched.secondarybankinfo?.[index]?.accountNumber &&
+                      formik.errors.secondarybankinfo?.[index]
+                        ?.accountNumber && (
+                        <ErrorMsg
+                          error={
+                            formik.errors.secondarybankinfo[index].accountNumber
+                          }
+                        />
+                      )}
                   </div>
                   <div className="col-span-2 max-md:col-span-3">
                     <TextInput
@@ -560,6 +574,14 @@ const OtherBankInfo = ({
                         formik.values.secondarybankinfo?.[index]?.ifscCode || ""
                       }
                     />
+                    {formik.touched.secondarybankinfo?.[index]?.ifscCode &&
+                      formik.errors.secondarybankinfo?.[index]?.ifscCode && (
+                        <ErrorMsg
+                          error={
+                            formik.errors.secondarybankinfo[index].ifscCode
+                          }
+                        />
+                      )}
                   </div>
 
                   <div className="col-span-2 max-md:col-span-3">
@@ -577,6 +599,16 @@ const OtherBankInfo = ({
                           ?.accountHolder || ""
                       }
                     />
+
+                    {formik.touched.secondarybankinfo?.[index]?.accountHolder &&
+                      formik.errors.secondarybankinfo?.[index]
+                        ?.accountHolder && (
+                        <ErrorMsg
+                          error={
+                            formik.errors.secondarybankinfo[index].accountHolder
+                          }
+                        />
+                      )}
                   </div>
 
                   {docData?.map((item) => {
