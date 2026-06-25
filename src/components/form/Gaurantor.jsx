@@ -59,28 +59,46 @@ const Guarantor = ({ btnEnable = false, incomplete }) => {
         : nominee.mobile_number || "",
     },
     validationSchema: Yup.object({
+      // guarantorName1: Yup.string()
+      //   .required("Required")
+      //   .min(3, "Invalid name")
+      //   .max(60, "Invalid name"),
       guarantorName1: Yup.string()
-        .required("Required")
-        .min(3, "Invalid name")
-        .max(60, "Invalid name"),
+        .trim()
+        .matches(
+          /^[A-Za-z]+( [A-Za-z]+)*$/,
+          "Only alphabets with single space allowed",
+        ),
       relation1: Yup.string().required("Required"),
       mobile_number1: Yup.string()
         .matches(/^[6-9]\d{9}$/, "Invalid mobile number.")
         .required("Required"),
 
+      // guarantorName2: Yup.string()
+      //   .required("Required")
+      //   .min(3, "Invalid name")
+      //   .max(60, "Invalid name"),
       guarantorName2: Yup.string()
-        .required("Required")
-        .min(3, "Invalid name")
-        .max(60, "Invalid name"),
+        .trim()
+        .matches(
+          /^[A-Za-z]+( [A-Za-z]+)*$/,
+          "Only alphabets with single space allowed",
+        ),
       relation2: Yup.string().required("Required"),
       mobile_number2: Yup.string()
         .matches(/^[6-9]\d{9}$/, "Invalid mobile number.")
         .required("Required"),
 
+      // nomineeName: Yup.string()
+      //   .required("Required")
+      //   .min(3, "Invalid name")
+      //   .max(60, "Invalid name"),
       nomineeName: Yup.string()
-        .required("Required")
-        .min(3, "Invalid name")
-        .max(60, "Invalid name"),
+        .trim()
+        .matches(
+          /^[A-Za-z]+( [A-Za-z]+)*$/,
+          "Only alphabets with single space allowed",
+        ),
       nomineeRelation: Yup.string().required("Required"),
       nomineeMobile: Yup.string()
         .matches(/^[6-9]\d{9}$/, "Invalid mobile number.")

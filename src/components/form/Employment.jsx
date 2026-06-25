@@ -56,7 +56,10 @@ const Employment = ({ btnEnable = false, incomplete }) => {
       company: Yup.string().required("Company name is required"),
       sector: Yup.string().required("Sector type is required"),
       workingSince: Yup.string().required("Working since is required"),
-      netSalary: Yup.string().required("Net salary is required"),
+      // netSalary: Yup.string().required("Net salary is required"),
+      netSalary: Yup.string()
+        .required("Net salary is required")
+        .matches(/^\d+$/, "Only numbers allowed"),
       salaryDate: Yup.string().required("Salary date is required"),
       file: Yup.mixed()
         .nullable()

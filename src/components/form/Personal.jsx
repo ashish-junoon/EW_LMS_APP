@@ -62,10 +62,14 @@ const PersonalInfo = ({ btnEnable = false, incomplete }) => {
         : personaData?.email_id || "",
     },
     validationSchema: Yup.object({
+      // fullName: Yup.string()
+      //   .min(3, "Must be 3 characters or more")
+      //   .max(50, "Must be 50 characters or less")
+      //   .required("Required"),
       fullName: Yup.string()
-        .min(3, "Must be 3 characters or more")
-        .max(50, "Must be 50 characters or less")
-        .required("Required"),
+        .trim()
+        .matches(/^[A-Za-z]+(?: [A-Za-z]+)*$/, "Only alphabets with single space allowed").min(3).max(50)
+        .required("Name is required"),
       userGender: Yup.string().required("Required"),
       maritalStatus: Yup.string().required("Required"),
       // dob: Yup.string()

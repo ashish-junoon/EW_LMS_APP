@@ -428,7 +428,7 @@ const Address = ({ btnEnable = false, incomplete }) => {
                 placeholder="Enter Zip Code"
                 name="zipCode"
                 disabled={!isEditing}
-                maxLength={7}
+                maxLength={6}
                 onChange={formik.handleChange}
                 onBlur={formik.handleBlur}
                 value={formik.values.zipCode}

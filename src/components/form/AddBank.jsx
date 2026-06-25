@@ -56,9 +56,10 @@ const AddBank = ({fetchData}) => {
         .matches(/^[A-Z]{4}0[A-Z0-9]{6}$/, "Invalid IFSC code"),
 
       accountHolderName: Yup.string()
-        .required("Account Holder Name is required")
-        .min(3, "Must be 3 characters or more")
-        .max(30, "Must be 50 characters or less"),
+        .min(3, "Must be at least 3 characters.")
+        .max(50, "Must be 50 characters or less.")
+        .matches(/^[A-Za-z\s]+$/, "Invalid account holder name.")
+        .required("Account holder name is required."),
 
       accountNumber: Yup.string()
         .required("Account Number is required")

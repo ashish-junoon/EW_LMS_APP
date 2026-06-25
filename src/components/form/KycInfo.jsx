@@ -384,6 +384,7 @@ const KycInfo = ({ btnEnable = false, incomplete }) => {
                 placeholder="PAN Number"
                 name="panNumber"
                 type="text"
+                maxLength={10}
                 disabled={!isEditing}
                 // onChange={formik.handleChange}
                 onChange={(e) => {
@@ -406,6 +407,7 @@ const KycInfo = ({ btnEnable = false, incomplete }) => {
                 placeholder="Aadhar Number"
                 name="adharNumber"
                 type="text"
+                maxLength={12}
                 disabled={!isEditing}
                 onChange={formik.handleChange}
                 onBlur={formik.handleBlur}

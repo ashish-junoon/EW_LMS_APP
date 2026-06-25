@@ -46,7 +46,7 @@ const BankInfo = ({ btnEnable = false, incomplete }) => {
   const docData = documents?.bank_statement;
   const [BankId, setBankId] = useState(null);
 
-  const doc = docData?.find(item => item?.id === bankData?.id);
+  const doc = docData?.find((item) => item?.id === bankData?.id);
 
   // console.log(bankData.bank_name.toLowerCase().replaceAll(" ",""));
 
@@ -149,9 +149,14 @@ const BankInfo = ({ btnEnable = false, incomplete }) => {
     },
     validationSchema: Yup.object({
       bankName: Yup.string().required("Bank name is required."),
+      // accountHolder: Yup.string()
+      //   .min(3, "Must be at least 3 characters.")
+      //   .max(50, "Must be 50 characters or less.")
+      //   .required("Account holder name is required."),
       accountHolder: Yup.string()
         .min(3, "Must be at least 3 characters.")
         .max(50, "Must be 50 characters or less.")
+        .matches(/^[A-Za-z\s]+$/, "Invalid account holder name.")
         .required("Account holder name is required."),
       accountNumber: Yup.string()
         .matches(
@@ -274,7 +279,7 @@ const BankInfo = ({ btnEnable = false, incomplete }) => {
           //   ...prev,
           //   bank_statement: [salarySlip],
           // }));
-          FetchDocData()
+          FetchDocData();
           toast.success(response.message);
           setIsEditing(false);
 
@@ -377,17 +382,17 @@ const BankInfo = ({ btnEnable = false, incomplete }) => {
   };
 
   const FetchDocData = async () => {
-      try {
-        const response = await getLeadDocuments({
-          user_id: leadInfo.user_id,
-          lead_id: leadInfo.lead_id,
-        });
-  
-        setDocuments(response);
-      } catch (error) {
-        console.log(error)
-      }
-    };
+    try {
+      const response = await getLeadDocuments({
+        user_id: leadInfo.user_id,
+        lead_id: leadInfo.lead_id,
+      });
+
+      setDocuments(response);
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   if (isLoading) {
     return <Loader />;
@@ -498,7 +503,10 @@ const BankInfo = ({ btnEnable = false, incomplete }) => {
                 disabled={!isEditing}
                 // onChange={formik.handleChange}
                 onChange={(e) => {
-                  formik.setFieldValue("ifscCode", e.target.value.toUpperCase());
+                  formik.setFieldValue(
+                    "ifscCode",
+                    e.target.value.toUpperCase(),
+                  );
                 }}
                 onBlur={formik.handleBlur}
                 value={formik.values.ifscCode}
