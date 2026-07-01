@@ -87,7 +87,7 @@ const DisbursementCollectionReportV1 = () => {
   return (
     <>
       <span className="md:text-lg italic font-semibold bg-primary text-white rounded-t-lg px-5 py-1">
-        Disbursement Collection Report{" "}
+        Disbursement Report{" "}
       </span>
       <div className="border border-gray-200 rounded shadow-sm">
         {/* Form */}
@@ -166,7 +166,7 @@ const DisbursementCollectionReportV1 = () => {
       ) : (
         <JsontoExcel
           reportDetail={reportData}
-          reportType="Disbursement-Collection-Reporting"
+          reportType="Disbursement-Report"
         />
       )}
     </>
