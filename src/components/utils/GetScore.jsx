@@ -9,6 +9,7 @@ import {
   ScoreFromEquiFax,
   UploadCreditReport,
   ScoreFromCrif,
+  CrifAuthQuestionnaire,
 } from "../../api/ApiFunction";
 import Loader from "./Loader";
 import SelectInput from "../fields/SelectInput";
@@ -27,6 +28,13 @@ const GetScore = ({ btnEnable = false }) => {
   const [loading, setLoading] = useState(false);
   const [isUplaod, setIsUplaod] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [isSubmiting, setisSubmiting] = useState(false);
+  const [QuesionareData, setQuesionareData] = useState({});
+  const [isQuesionareOpen, setisQuesionareOpen] = useState(false);
+  const [selectedOption, setSelectedOption] = useState({
+    index: "",
+    option: "",
+  });
   const { leadInfo, setLeadInfo } = useOpenLeadContext();
   const { adminUser } = useAuth();
 
@@ -59,8 +67,8 @@ const GetScore = ({ btnEnable = false }) => {
         getExperianScore();
       } else if (values.platform === "Transunion") {
         getTransUnionScore();
-      }else if(values.platform === "Crif"){
-        getCrifScore()
+      } else if (values.platform === "Crif") {
+        getCrifScore();
       }
     },
   });
@@ -235,6 +243,51 @@ const GetScore = ({ btnEnable = false }) => {
     }
   };
 
+  // const getCrifScore = async () => {
+  //   setLoading(true);
+
+  //   const req = {
+  //     user_id: leadInfo?.user_id,
+  //     lead_id: leadInfo?.lead_id,
+  //     company_id: import.meta.env.VITE_COMPANY_ID,
+  //     productName: import.meta.env.VITE_PRODUCT_NAME,
+  //     first_name: firstN,
+  //     last_name: secondN,
+  //     uid_number: leadInfo?.kycInfo[0].pan_card_number,
+  //     mobile_number: leadInfo?.mobile_number,
+  //   };
+
+  //   try {
+  //     const response = await ScoreFromCrif(req);
+  //     if (response.Status === "true") {
+  //       setLeadInfo((prev) => ({
+  //         ...prev,
+  //         cibilCreditScores: [
+  //           {
+  //             name: response.Data.name,
+  //             mobile: response.Data.mobile,
+  //             pan_number: response.Data.pan,
+  //             credit_score: response.Data.creditScore,
+  //             credit_report_link: response.Data.creditReportLink,
+  //             provider: response.provider,
+  //           },
+  //         ],
+  //       }));
+
+  //       setLoading(false);
+  //       toast.success(response.message);
+  //     } else {
+  //       toast.info(response.message || "Incorect details Provided!");
+  //     }
+  //   } catch (error) {
+  //     console.error("Error fetching data:", error);
+  //     toast.error("An error occurred while fetching data.");
+  //   }
+  //   setLoading(false);
+  // };
+
+  // finding Statecodelist
+
   const getCrifScore = async () => {
     setLoading(true);
 
@@ -251,7 +304,20 @@ const GetScore = ({ btnEnable = false }) => {
 
     try {
       const response = await ScoreFromCrif(req);
-      if (response.Status === "true") {
+
+      if (response.Status === "true" && response.Data.status == "S11") {
+        setisQuesionareOpen(true);
+        setQuesionareData(response);
+        setSelectedOption({ option: "", index: "" });
+      } else if (response.Status === "true" && response.Data.status == "S02") {
+        setisQuesionareOpen(false);
+        setQuesionareData({});
+        setSelectedOption({ option: "", index: "" });
+      } else if (
+        response.Status === "true" &&
+        response.Data &&
+        !response.Data.status
+      ) {
         setLeadInfo((prev) => ({
           ...prev,
           cibilCreditScores: [
@@ -265,12 +331,32 @@ const GetScore = ({ btnEnable = false }) => {
             },
           ],
         }));
-
-        setLoading(false);
-        toast.success(response.message);
       } else {
         toast.info(response.message || "Incorect details Provided!");
+        setisQuesionareOpen(false);
+        setQuesionareData({});
       }
+
+      // if (response.Status === "true") {
+      //   setLeadInfo((prev) => ({
+      //     ...prev,
+      //     cibilCreditScores: [
+      //       {
+      //         name: response.Data.name,
+      //         mobile: response.Data.mobile,
+      //         pan_number: response.Data.pan,
+      //         credit_score: response.Data.creditScore,
+      //         credit_report_link: response.Data.creditReportLink,
+      //         provider: response.provider,
+      //       },
+      //     ],
+      //   }));
+
+      //   setLoading(false);
+      //   toast.success(response.message);
+      // } else {
+      //   toast.info(response.message || "Incorect details Provided!");
+      // }
     } catch (error) {
       console.error("Error fetching data:", error);
       toast.error("An error occurred while fetching data.");
@@ -278,7 +364,71 @@ const GetScore = ({ btnEnable = false }) => {
     setLoading(false);
   };
 
-  // finding Statecodelist
+  const handleOptionClick = async () => {
+    try {
+      setisSubmiting(true);
+      // console.log(selectedOption);
+      const req = {
+        transaction_id: QuesionareData.TransactionId,
+        orderid: QuesionareData.Data.orderId,
+        reportId: QuesionareData.Data.reportId,
+        amsware: selectedOption?.option,
+      };
+      const response = await CrifAuthQuestionnaire(req);
+
+      if (response?.Status == "true" && response.Data.status == "S11") {
+        setisQuesionareOpen(true);
+        setQuesionareData(response);
+        setSelectedOption({ index: "", option: "" });
+      } else if (response?.Status == "true" && response.Data.status == "S02") {
+        toast.info(response.Data.statusDesc || "Authentication failed!");
+        setisQuesionareOpen(false);
+        setSelectedOption({ index: "", option: "" });
+        setLeadInfo((prev) => ({
+          ...prev,
+          cibilCreditScores: [
+            {
+              name: response.Data.name,
+              mobile: response.Data.mobile,
+              pan_number: response.Data.pan,
+              credit_score: response.Data.creditScore,
+              credit_report_link: response.Data.creditReportLink,
+              provider: response.provider,
+            },
+          ],
+        }));
+      } else if (response?.Status == "true") {
+        setQuesionareData(response);
+        setisQuesionareOpen(false);
+        setSelectedOption({ index: "", option: "" });
+        setLeadInfo((prev) => ({
+          ...prev,
+          cibilCreditScores: [
+            {
+              name: response.Data.name,
+              mobile: response.Data.mobile,
+              pan_number: response.Data.pan,
+              credit_score: response.Data.creditScore,
+              credit_report_link: response.Data.creditReportLink,
+              provider: response.provider,
+            },
+          ],
+        }));
+      } else {
+        toast.info(response.message || "Incorect details Provided!");
+        setisQuesionareOpen(false);
+        setQuesionareData({});
+        setSelectedOption({ index: "", option: "" });
+      }
+    } catch (error) {
+      toast.error(
+        error.message || "Something went wrong while fetching report.",
+      );
+    } finally {
+      setisSubmiting(false);
+    }
+  };
+
   const normalize = (str) => str?.toLowerCase().replaceAll(" ", "").trim();
   const code = stateCodelist?.find(
     (item) =>
@@ -379,6 +529,11 @@ const GetScore = ({ btnEnable = false }) => {
       toast.error("An error occurred while fetching data.");
     }
     setLoading(false);
+  };
+
+    const handleCancleQuetionare = () => {
+    setisQuesionareOpen(false);
+    setQuesionareData({});
   };
 
   if (loading) {
@@ -638,6 +793,62 @@ const GetScore = ({ btnEnable = false }) => {
           </form>
         </div>
       </Modal>
+
+            {/* Quetionare Modal */}
+      <Modal
+        isOpen={isQuesionareOpen}
+        onClose={() => setisQuesionareOpen(false)}
+        heading={QuesionareData?.Data?.statusDesc || "Authentication Phase"}
+      >
+        <div className="text-lg sm:text-md md:text-md font-semibold text-slate-800 mb-4 sm:mb-5 leading-tight">
+          {QuesionareData?.Data?.question}
+        </div>
+
+        <div className="grid sm:grid-cols-2 gap-2">
+          {QuesionareData?.Data?.optionsList?.map((option, index) => {
+            const isSelected = selectedOption?.index === index;
+
+            return (
+              <label
+                key={index}
+                className={`flex items-center gap-4 px-4 py-3 rounded-lg border-2 cursor-pointer transition-all duration-200 ${
+                  isSelected
+                    ? "border-primary bg-blue-50"
+                    : "border-gray-200 hover:border-primary/40 hover:bg-gray-50"
+                }`}
+              >
+                {/* Radio Button */}
+                <input
+                  type="radio"
+                  name="questionOption"
+                  checked={isSelected}
+                  onChange={() => setSelectedOption({ index, option })}
+                  className="h-5 w-5 accent-blue-800 cursor-pointer"
+                />
+                <span className="text-slate-700 flex-1">{option}</span>
+              </label>
+            );
+          })}
+        </div>
+
+        <div className="flex justify-end gap-2">
+          <button
+            onClick={() => handleCancleQuetionare()}
+            className={`bg-black text-white px-4 py-1 mt-5 rounded-md font-semibold cursor-pointer`}
+          >
+            Cancle
+          </button>
+          <button
+            disabled={!selectedOption?.option || isSubmiting}
+            onClick={() => handleOptionClick()}
+            className={`${!selectedOption?.option || isSubmiting ? "bg-gray-300" : "bg-primary"} text-white px-4 py-1 mt-5 rounded-md font-semibold cursor-pointer`}
+          >
+            {isSubmiting ? "Submitting..." : "Submit"}
+            {/* Submit */}
+          </button>
+        </div>
+      </Modal>
+      
     </div>
   );
 };

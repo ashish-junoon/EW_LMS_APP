@@ -283,25 +283,27 @@ function EMISchedule({
   //   }
   // };
 
+    const dayTodate = new Date().getDate();
+
   const getMinDate = (role, emp_code) => {
     if (
-      emp_code == "JC0020" ||
-      emp_code == "JC0037" ||
-      emp_code == "JC0001" ||
-      emp_code == "JC0044" ||
-      emp_code == "JC0061" ||
-      emp_code == "JC0070"
-    ) {
-      return;
-    } else if (
-      role == "admin" ||
-      emp_code == "JC0043"
-      // role == "administrator" ||
+      (emp_code == "JC0020" ||
+        emp_code == "JC0037" ||
+        emp_code == "JC0001" ||
+        emp_code == "JC0044" ||
+        emp_code == "JC0099" ||
+        emp_code == "JC0061") &&
+      (dayTodate >= 1 && dayTodate <= 7)
     ) {
       const today = new Date();
-      today.setDate(today.getDate() - 30); // 30 days after today
-      const mindate = today.toISOString().split("T")[0];
-      return mindate;
+      // today.setDate(today.getDate() - 14); // 15 days after today
+      // const mindate = today.toISOString().split("T")[0];
+      // First day of previous month
+      const mindate = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+      const formattedMinDate = mindate.toLocaleDateString("en-CA");
+      console.log(formattedMinDate);
+      
+      return formattedMinDate;
     } else {
       const today = new Date();
       today.setDate(today.getDate() - 4); // 5 days after today
@@ -309,6 +311,33 @@ function EMISchedule({
       return mindate;
     }
   };
+
+  // const getMinDate = (role, emp_code) => {
+  //   if (
+  //     emp_code == "JC0020" ||
+  //     emp_code == "JC0037" ||
+  //     emp_code == "JC0001" ||
+  //     emp_code == "JC0044" ||
+  //     emp_code == "JC0061" ||
+  //     emp_code == "JC0070"
+  //   ) {
+  //     return;
+  //   } else if (
+  //     role == "admin" ||
+  //     emp_code == "JC0043"
+  //     // role == "administrator" ||
+  //   ) {
+  //     const today = new Date();
+  //     today.setDate(today.getDate() - 30); // 30 days after today
+  //     const mindate = today.toISOString().split("T")[0];
+  //     return mindate;
+  //   } else {
+  //     const today = new Date();
+  //     today.setDate(today.getDate() - 4); // 5 days after today
+  //     const mindate = today.toISOString().split("T")[0];
+  //     return mindate;
+  //   }
+  // };
 
   useEffect(() => {
     getFounder();
@@ -543,10 +572,16 @@ function EMISchedule({
       status: "",
       remarks: "",
       bank: "",
+      waive_off_status: "",
       waiveOff: "0", // Default to 0 to avoid NaN issues
     },
 
     validationSchema: Yup.object({
+      waive_off_status: Yup.string().when("status", {
+        is: "15",
+        then: (schema) => schema.required("waive_off_status is required"),
+        otherwise: (schema) => schema.notRequired(),
+      }),
       collectionMode: Yup.string().required("Collection Mode is required"),
       collectedAmount: Yup.number()
         .required("Collected Amount is required")
@@ -564,7 +599,7 @@ function EMISchedule({
             // Check if status is 10 or 11 and collected amount doesn't match total outstanding
             // Status 6 is excluded from this validation
             if (parseInt(status) === 10 || parseInt(status) === 11) {
-              return Math.round(value) === Math.round(totalOutstanding);
+              return Math.ceil(value) === Math.ceil(totalOutstanding);
               // return parseFloat(value) === parseFloat(totalOutstanding);
             }
             return true;
@@ -575,8 +610,8 @@ function EMISchedule({
           "Does not match total outstanding amount",
           function (value) {
             const { status, waiveOff, collectedAmount } = this.parent;
-            const collected = Math.round(collectedAmount || 0);
-            const waived = Math.round(waiveOff || 0);
+            const collected = Math.ceil(collectedAmount || 0);
+            const waived = Math.ceil(waiveOff || 0);
 
             // Only validate if status is provided and not 10, 11, or 6
             // Status 6 is excluded from total outstanding validation
@@ -591,7 +626,7 @@ function EMISchedule({
             ) {
               // return collected + waived === parseFloat(totalOutstanding);
               return (
-                Math.round(collected + waived) === Math.round(totalOutstanding)
+                Math.ceil(collected + waived) === Math.ceil(totalOutstanding)
               );
             }
             return true;
@@ -603,8 +638,8 @@ function EMISchedule({
           "Amount cannot exceed current due amount",
           function (value) {
             const { status } = this.parent;
-            const collected = Math.round(value || 0);
-            const dueToday = Math.round(totalOutstanding || 0);
+            const collected = Math.ceil(value || 0);
+            const dueToday = Math.ceil(totalOutstanding || 0);
 
             if (
               parseInt(status) === 6 ||
@@ -653,8 +688,8 @@ function EMISchedule({
           "Does not match total outstanding amount",
           function (value) {
             const { status, collectedAmount } = this.parent;
-            const collected = Math.round(collectedAmount || 0);
-            const waived = Math.round(value || 0);
+            const collected = Math.ceil(collectedAmount || 0);
+            const waived = Math.ceil(value || 0);
 
             // Only validate if status is provided and not 10, 11, or 6
             // Status 6 is excluded from total outstanding validation
@@ -665,7 +700,7 @@ function EMISchedule({
               parseInt(status) !== 6
             ) {
               return (
-                Math.round(collected + waived) === Math.round(totalOutstanding)
+                Math.ceil(collected + waived) === Math.ceil(totalOutstanding)
               );
             }
             return true;
@@ -692,11 +727,13 @@ function EMISchedule({
           loan_id: loanId,
           company_id: import.meta.env.VITE_COMPANY_ID,
           product_name: import.meta.env.VITE_PRODUCT_NAME,
-          collection_amount: Math.round(Number(values.collectedAmount)),
+          collection_amount: Math.ceil(Number(values.collectedAmount)),
           payment_mode: values.collectionMode,
           transction_id: values.transactionId,
           collection_date: values.collectionDate,
-          collection_status: values.status,
+          // collection_status: values.status,
+          collection_status:
+            values.status == "15" ? values.waive_off_status : values.status,
           remarks: values.remarks,
           payment_recipt_name: fileName,
           payment_recipt_exention: fileExtension,
@@ -1170,6 +1207,8 @@ function EMISchedule({
     try {
       const req = {
         transaction_id: cancelData.transaction_id,
+        unique_id: cancelData?.id,
+        updateby: adminUser?.emp_code
       };
       const response = await CancelPresentment(req);
 
@@ -1186,6 +1225,14 @@ function EMISchedule({
   };
 
   useEffect(() => {
+    if (
+      UpdatePayment.values.status == "10" ||
+      UpdatePayment.values.status == "11" ||
+      UpdatePayment.values.status == "6"
+    ) {
+      UpdatePayment.setFieldValue("waiveOff", 0);
+    }
+    
     if (UpdatePayment.values.status === "10") {
       UpdatePayment.setFieldValue(
         "collectedAmount",
@@ -1629,7 +1676,7 @@ function EMISchedule({
                 )}
               </div>
 
-              <div className="col-span-2">
+              <div className="col-span-1">
                 <TextInput
                   label="Remarks"
                   icon="IoPersonOutline"
@@ -1645,6 +1692,30 @@ function EMISchedule({
                     <ErrorMsg error={UpdatePayment.errors.remarks} />
                   )}
               </div>
+
+              {UpdatePayment.values.status == 15 && (
+                <div className="col-span-1">
+                  <SelectInput
+                    label="waive-off Status"
+                    placeholder="Select"
+                    icon="MdModelTraining"
+                    name="waive_off_status"
+                    id="waive_off_status"
+                    options={[
+                      { label: "Fully Paid", value: "10" },
+                      { label: "Foreclosed", value: "11" },
+                    ]}
+                    onChange={UpdatePayment.handleChange}
+                    onBlur={UpdatePayment.handleBlur}
+                    value={UpdatePayment.values.waive_off_status}
+                  />
+                  {UpdatePayment.touched.waive_off_status &&
+                    UpdatePayment.errors.waive_off_status && (
+                      <ErrorMsg error={UpdatePayment.errors.waive_off_status} />
+                    )}
+                </div>
+              )}
+
             </div>
             <div className="flex justify-end gap-4 mt-2">
               <Button

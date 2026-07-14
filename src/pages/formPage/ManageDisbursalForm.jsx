@@ -143,31 +143,32 @@ const ManageDisbursalForm = () => {
   };
 
   const handleApproveYes = async () => {
-      const payload = {
-        lead_id: lead_id,
-        step_status: 24,
-        is_prove: true,
-        updated_by: adminUser?.emp_code,
-        reason: "Ready for Disbursed ",
-        remarks: "Lead is Ready for Disbursed, forwarded for Ready for Disbursed Page."
-      };
-      try {
-        const response = await UpdateUserLead(payload);
-        if (response.status) {
-                toast.success(response.message);
-                navigate("/manage-leads/manage-disbursal");
-            } else {
-                toast.error(response.message);
-            }
-      } catch (error) {
-        console.error("Error fetching data:", error);
-        toast.error("An error occurred while fetching data.");
+    const payload = {
+      lead_id: lead_id,
+      step_status: 24,
+      is_prove: true,
+      updated_by: adminUser?.emp_code,
+      reason: "Ready for Disbursed ",
+      remarks:
+        "Lead is Ready for Disbursed, forwarded for Ready for Disbursed Page.",
+    };
+    try {
+      const response = await UpdateUserLead(payload);
+      if (response.status) {
+        toast.success(response.message);
+        navigate("/manage-leads/manage-disbursal");
+      } else {
+        toast.error(response.message);
       }
-    };
-  
-    const handleApproveNo = () => {
-      setIsReadyOpen(false);
-    };
+    } catch (error) {
+      console.error("Error fetching data:", error);
+      toast.error("An error occurred while fetching data.");
+    }
+  };
+
+  const handleApproveNo = () => {
+    setIsReadyOpen(false);
+  };
 
   const formik = useFormik({
     enableReinitialize: true, // ✅ Important: allows initialValues to update when userData changes
@@ -198,7 +199,7 @@ const ManageDisbursalForm = () => {
               (date.isAfter(threeDaysAgo) && date.isBefore(today)) ||
               date.isSame(threeDaysAgo)
             );
-          }
+          },
         ),
       funderName: Yup.string().required("Funder name is required."),
     }),
@@ -285,8 +286,10 @@ const ManageDisbursalForm = () => {
     intrestAmount: "₹" + userData?.selectedproduct[0]?.interest_amount,
     proccesingAmount: "₹" + userData?.selectedproduct[0]?.processing_fee_amount,
     insuranceAmount: "₹" + userData?.selectedproduct[0]?.insurance_premium,
-    GSTAmount: "₹" + Number(userData?.selectedproduct[0]?.total_gst_amount).toFixed(2),
-    disbursmentAmount: "₹" + Math.round(userData?.selectedproduct[0]?.disburesement_amount),
+    GSTAmount:
+      "₹" + Number(userData?.selectedproduct[0]?.total_gst_amount).toFixed(2),
+    disbursmentAmount:
+      "₹" + Math.round(userData?.selectedproduct[0]?.disburesement_amount),
     repaymentAmount: "₹" + userData?.selectedproduct[0]?.emi_amount,
     repaymentFrequency: userData?.selectedproduct[0]?.repayment_frequency,
   };
@@ -307,14 +310,14 @@ const ManageDisbursalForm = () => {
     //   product_name: import.meta.env.VITE_PRODUCT_NAME,
     // };
 
-    const req={
-        account_number: data?.account_number,
-        account_ifsc: data?.ifsc_code,
-        verification_type: "pennyless",
-        lead_id: lead_id,
-        user_id: user_id,
-        type: 1
-    }
+    const req = {
+      account_number: data?.account_number,
+      account_ifsc: data?.ifsc_code,
+      verification_type: "pennyless",
+      lead_id: lead_id,
+      user_id: user_id,
+      type: 1,
+    };
 
     try {
       setIsLoading(true);
@@ -327,7 +330,11 @@ const ManageDisbursalForm = () => {
         fetchData();
       } else {
         // toast.error(response.message || "Bank verification failed!");
-        toast.error(response.data.failure_reason || response.data.npci_error_description || "Bank verification failed!");
+        toast.error(
+          response.data.failure_reason ||
+            response.data.npci_error_description ||
+            "Bank verification failed!",
+        );
       }
     } catch (error) {
       console.error("Error fetching data:", error);
@@ -446,13 +453,18 @@ const ManageDisbursalForm = () => {
   //     str.replace(/([A-Z])/g, ' $1').trim().split(' ').map((word) => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
 
   const capitalizeWords = (str) =>
-    str.replace(/_/g, " ").replace(/([A-Z]+)([A-Z][a-z])/g, "$1 $2").replace(/([a-z])([A-Z])/g, "$1 $2")
-      .trim().split(/\s+/)
+    str
+      .replace(/_/g, " ")
+      .replace(/([A-Z]+)([A-Z][a-z])/g, "$1 $2")
+      .replace(/([a-z])([A-Z])/g, "$1 $2")
+      .trim()
+      .split(/\s+/)
       .map((word) =>
         ["ifsc", "id", "api", "gst", "pan"].includes(word.toLowerCase())
           ? word.toUpperCase()
-          : word[0]?.toUpperCase() + word.slice(1)
-    ).join(" ");
+          : word[0]?.toUpperCase() + word.slice(1),
+      )
+      .join(" ");
 
   useEffect(() => {
     if (lead_id && user_id) {
@@ -540,14 +552,14 @@ const ManageDisbursalForm = () => {
                     ))}
 
                     {(bankVerified || isBankVerified) && (
-                        <div className="flex justify-end items-center mb-2">
-                          <img
-                            src={Images.verifiedStamp}
-                            alt="disbursal"
-                            className="w-1/3"
-                          />
-                        </div>
-                      )}
+                      <div className="flex justify-end items-center mb-2">
+                        <img
+                          src={Images.verifiedStamp}
+                          alt="disbursal"
+                          className="w-1/3"
+                        />
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
@@ -575,7 +587,9 @@ const ManageDisbursalForm = () => {
           <div className="lg:col-span-2 py-5">
             <div>{!funder && <FormSidebar data={userData} />}</div>
           </div>
-          <div className={`${!funder ? "lg:col-span-5" : "lg:col-span-7"} py-5`}>
+          <div
+            className={`${!funder ? "lg:col-span-5" : "lg:col-span-7"} py-5`}
+          >
             <Personal />
             <Employment />
             <Address />
@@ -601,17 +615,15 @@ const ManageDisbursalForm = () => {
           <LoanHistory
             btnEnable={isOnHold}
             pan={userData?.kycInfo[0]?.pan_card_number}
-            data={userData} 
+            data={userData}
           />
         </div>
       ),
     },
     {
       label: "Mandate History",
-      content: <MandateHistory
-        data={userData}
-      />
-    }
+      content: <MandateHistory data={userData} />,
+    },
   ];
 
   const fetchData = async () => {
@@ -641,11 +653,17 @@ const ManageDisbursalForm = () => {
   const handleConfirm = () => {
     setOpen(!open);
   };
-
+  const disburseStatus = userData?.disbursement_status
+    ?.replaceAll(" ", "")
+    ?.toLowerCase();
+    
   const handleReadyDisbursed = () => {
-    setIsReadyOpen(!isReadyOpen)
-  }
-  
+    if ("disbursementfailed" == disburseStatus) {
+      toast.info("Disbursement was failed while automatic disbursement!");
+      return;
+    }
+    setIsReadyOpen(!isReadyOpen);
+  };
 
   if (isLoading) {
     return <Loader />;
@@ -654,7 +672,6 @@ const ManageDisbursalForm = () => {
   if (!userData) {
     return <div>No data available</div>;
   }
-
 
   return (
     <>
@@ -1004,7 +1021,7 @@ const ManageDisbursalForm = () => {
         </div>
       </Modal>
 
-    {/* Ready for disbursed Confirmation model  */}
+      {/* Ready for disbursed Confirmation model  */}
       <Modal isOpen={isReadyOpen} onClose={() => setIsReadyOpen(false)}>
         <div className="text-center font-semibold my-3">
           <h1>Are you sure to mark this Profile as Ready for Disbursed ?</h1>

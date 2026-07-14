@@ -259,6 +259,7 @@ function AddUser() {
                 options={[
                   { value: "Admin", label: "Admin" },
                   { value: "Funder", label: "Funder" },
+                  { value: "Management", label: "Management" },
                   { value: "Others", label: "Others" },
                 ]}
                 {...formik.getFieldProps("role")}

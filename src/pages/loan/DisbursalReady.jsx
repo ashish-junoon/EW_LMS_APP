@@ -21,6 +21,7 @@ const DisbursalReady = () => {
   const [errorMsg, setErrorMsg] = useState(null);
   const [isReadyOpen, setIsReadyOpen] = useState(false);
   const [isMoveOpen, setIsMoveOpen] = useState(false);
+  const [isMoveBackOpen, setIsMoveBackOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [selectedRows, setSelectedRows] = useState([]);
   const [DisbursePage, setDisbursePage] = useState(24);
@@ -40,7 +41,10 @@ const DisbursalReady = () => {
     0,
   );
 
-  let TotalAmt = tableData.reduce((acc, item )=> item.disburesement_amount + acc, 0)
+  let TotalAmt = tableData.reduce(
+    (acc, item) => item.disburesement_amount + acc,
+    0,
+  );
 
   // alert(JSON.stringify(adminUser));
 
@@ -221,6 +225,32 @@ const DisbursalReady = () => {
     }
   };
 
+      const handleMoveBackYes = async () => {
+    const payload = {
+      lead_id: leadID,
+      step_status: 5,
+      is_prove: true,
+      updated_by: adminUser?.emp_code,
+      reason: "Moved to Manage Disbursed Page from Disbursal failed lead!",
+      remarks:
+        "Lead is moved to Manage Disbursal Page from Failed Disbursing Leads.",
+    };
+    try {
+      const response = await UpdateUserLead(payload);
+      if (response.status) {
+        toast.success(response.message);
+        // navigate("/manage-leads/manage-disbursalready");
+        fetchData();
+        setIsMoveBackOpen(false)
+      } else {
+        toast.error(response.message);
+      }
+    } catch (error) {
+      console.error("Error fetching data:", error);
+      toast.error("An error occurred while fetching data.");
+    }
+  };
+
   const fetchData = async () => {
     setIsLoading(true);
 
@@ -242,10 +272,10 @@ const DisbursalReady = () => {
         setTableData(transformedData);
         setleaddata(response);
         setIsLoading(false);
-        setcounts(response)
+        setcounts(response);
       } else {
         // console.log(response.message);
-        setcounts(response)
+        setcounts(response);
         setTableData([]);
       }
     } catch (error) {
@@ -266,9 +296,9 @@ const DisbursalReady = () => {
   };
 
   const handleFailedMessage = (data) => {
-    setIsOpen(true)
-    setErrorMsg(data?.failedmessage || "Bank Server Down")
-  }
+    setIsOpen(true);
+    setErrorMsg(data?.failedmessage || "Bank Server Down");
+  };
 
   if (isLoading) return <Loader />;
 
@@ -307,6 +337,25 @@ const DisbursalReady = () => {
           disabled={selectedRows.length}
           onClick={() => {
             (setIsMoveOpen(true), setleadID(row?.lead_id));
+          }}
+          className="bg-primary font-bold border border-primary text-white text-[10px] px-2 py-0.5 rounded-md shadow-md italic flex items-center gap-1"
+        >
+          <Icon name="TiArrowBack" size={18} />
+        </button>
+      ),
+      ignoreRowClick: true,
+      allowOverflow: true,
+      button: true,
+    },
+    {
+      name: "Move to Disbursal Page",
+      omit: DisbursePage !== 26,
+      width: "150px",
+      cell: (row) => (
+        <button
+          disabled={selectedRows.length}
+          onClick={() => {
+            (setIsMoveBackOpen(true), setleadID(row?.lead_id));
           }}
           className="bg-primary font-bold border border-primary text-white text-[10px] px-2 py-0.5 rounded-md shadow-md italic flex items-center gap-1"
         >
@@ -378,7 +427,10 @@ const DisbursalReady = () => {
           );
         } else if (row.status.toString() === "26") {
           return (
-            <span onClick={()=> handleFailedMessage(row)} className="text-red-500 font-bold text-[10px] border border-red-500 px-2 py-0.5 rounded-full shadow-md italicl">
+            <span
+              onClick={() => handleFailedMessage(row)}
+              className="text-red-500 font-bold text-[10px] border border-red-500 px-2 py-0.5 rounded-full shadow-md italicl"
+            >
               Refunded
             </span>
           );
@@ -496,7 +548,6 @@ const DisbursalReady = () => {
             );
           })}
         </div>
-        
 
         {/* Amount Card  */}
         {DisbursePage === 24 && (
@@ -641,17 +692,48 @@ const DisbursalReady = () => {
         </div>
       </Modal>
 
+      {/* Move Lead to Manage Disbursal Page - Confirmation model  */}
+      <Modal
+        isOpen={isMoveBackOpen}
+        onClose={() => {
+          setIsMoveBackOpen(false);
+        }}
+      >
+        <div className="text-center font-semibold my-3">
+          <h1>Are you sure, you want to Move Lead to Manage Disbursal Page?</h1>
+        </div>
+
+        <div className="flex justify-end gap-4 mt-2">
+          <Button
+            btnName="Yes"
+            btnIcon="IoCheckmarkCircleSharp"
+            type="submit"
+            onClick={handleMoveBackYes}
+            style="min-w-[80px] text-sm italic my-4 font-semibold md:w-auto py-1 border-success px-4 text-white bg-success border hover:border-success text-primary hover:bg-white hover:text-success hover:font-bold"
+          />
+          <Button
+            btnName={"No"}
+            btnIcon={"IoCloseCircleOutline"}
+            type={"button"}
+            onClick={handleApproveNo}
+            style="min-w-[80px] text-sm italic font-semibold md:w-auto my-4 py-1 px-4 border border-primary text-primary hover:border-danger hover:text-danger hover:font-bold"
+          />
+        </div>
+      </Modal>
 
       {/* Failure Card Modal  */}
       <Modal
         isOpen={isOpen}
         onClose={() => {
           setIsOpen(false);
-          setErrorMsg(null)
+          setErrorMsg(null);
         }}
       >
         <div className="text-center font-semibold my-3">
-          <h1>Hello, Disbursement Process has been failed due to <span className="text-red-500 font-bold">{errorMsg}</span>!</h1>
+          <h1>
+            Hello, Disbursement Process has been failed due to{" "}
+            <span className="text-red-500 font-bold">{errorMsg}</span>!
+          </h1>
         </div>
 
         <div className="flex justify-end gap-4 mt-2">
@@ -659,7 +741,9 @@ const DisbursalReady = () => {
             btnName="Ok"
             btnIcon="IoCheckmarkCircleSharp"
             type="submit"
-            onClick={()=> {setIsOpen(false), setErrorMsg(null)}}
+            onClick={() => {
+              (setIsOpen(false), setErrorMsg(null));
+            }}
             style="min-w-[80px] text-sm italic my-4 font-semibold md:w-auto py-1 border-success px-4 text-white bg-success border hover:border-success text-primary hover:bg-white hover:text-success hover:font-bold"
           />
         </div>

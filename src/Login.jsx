@@ -80,7 +80,7 @@ const Login = () => {
       const host = window.location.hostname;
 
       // 🎯 Specific IP check
-      if (host === "10.0.0.20") {
+      if (host === "10.0.0.20" || host === "10.0.0.41") {
         return resolve({
           lat: 28.6139, // 👈 apna static lat
           long: 77.209, // 👈 apna static long
@@ -131,7 +131,7 @@ const Login = () => {
           name: "geolocation",
         });
 
-        if (host != "10.0.0.20" && permission.state === "denied") {
+        if (host != "10.0.0.20" && host != "10.0.0.41" && permission.state === "denied") {
           toast.info(
             "Location is blocked. Please enable it from browser settings.",
           );
