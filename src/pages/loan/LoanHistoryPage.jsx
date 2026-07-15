@@ -26,6 +26,7 @@ const LoanHistoryPage = () => {
   const [userData, setUserData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [schedule, setSchedule] = useState(null);
+  const [tableData, setTableData] = useState(null);
   const [data, setData] = useState(null);
   // const lead_id = location.state?.lead_id;
   // const user_id = location.state?.user_id;
@@ -308,7 +309,7 @@ const LoanHistoryPage = () => {
         }); // Changed Loan id loan_id to loanId
         if (response.status) {
           setSchedule(response);
-          //   setTableData(response.emi_Schedules || []);
+            setTableData(response.emi_Schedules || []);
         }
       } catch (error) {
         console.error("Error fetching data:", error);
@@ -451,6 +452,54 @@ const LoanHistoryPage = () => {
               </div>
             )}
           </div>
+
+          {tableData?.length > 0 ? (
+        <div className="relative overflow-x-auto sm:rounded-lg mt-10">
+          <table className="w-full text-sm text-center text-slate-800 mb-5">
+            <thead className="text-xs text-white font-bold bg-primary">
+              <tr>
+                <th className="px-6 py-2">#</th>
+                <th className="px-6 py-2">Principal</th>
+                <th className="px-6 py-2">Interest</th>
+                <th className="px-6 py-2">DPD (Days)</th>
+                <th className="px-6 py-2">Payment Mode</th>
+                <th className="px-6 py-2">Amount Paid</th>
+                <th className="px-6 py-2">Paid On</th>
+                <th className="px-6 py-2">Settled</th>
+              </tr>
+            </thead>
+            <tbody>
+              {tableData?.map((item, index) => (
+                <tr
+                  key={index}
+                  className={`border-b border-slate-200 ${
+                    index % 2 === 0 ? "bg-gray-100" : "bg-white"
+                  }`}
+                >
+                  <td className="px-6 py-2">{index + 1}</td>
+                  <td className="px-6 py-2">{item.principl_collect || "0"}</td>
+                  <td className="px-6 py-2">
+                    {item.total_interest_collect || "0"}
+                  </td>
+                  <td className="px-6 py-2">{item.dpd || "0"}</td>
+                  <td className="px-6 py-2">{item.payment_mode || "0"}</td>
+                  <td className="px-6 py-2">{item.total_paid_amount || "0"}</td>
+                  <td className="px-6 py-2">
+                    {item.paid_on || (
+                      <span className="text-primary text-xs">--</span>
+                    )}
+                  </td>
+                  <td className="px-6 py-2">{item.waive_off_amount || "0"}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      ) : (
+        <div className="flex justify-center items-center h-64">
+          <p>No data available</p>
+        </div>
+      )}
         </div>
       ),
     },

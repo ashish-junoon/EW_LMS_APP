@@ -1411,7 +1411,7 @@ function EMISchedule({
         </div>
       </div>
 
-      {tableData.length > 0 ? (
+      {tableData?.length > 0 ? (
         <div className="relative overflow-x-auto sm:rounded-lg mt-10">
           <table className="w-full text-sm text-center text-slate-800 mb-5">
             <thead className="text-xs text-white font-bold bg-primary">
@@ -1427,7 +1427,7 @@ function EMISchedule({
               </tr>
             </thead>
             <tbody>
-              {tableData.map((item, index) => (
+              {tableData?.map((item, index) => (
                 <tr
                   key={index}
                   className={`border-b border-slate-200 ${
