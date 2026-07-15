@@ -287,12 +287,7 @@ function EMISchedule({
 
   const getMinDate = (role, emp_code) => {
     if (
-      (emp_code == "JC0020" ||
-        emp_code == "JC0037" ||
-        emp_code == "JC0001" ||
-        emp_code == "JC0044" ||
-        emp_code == "JC0099" ||
-        emp_code == "JC0061") &&
+      (emp_code == "JC0001" || emp_code == "JC0099") &&
       (dayTodate >= 1 && dayTodate <= 7)
     ) {
       const today = new Date();
@@ -1480,8 +1475,8 @@ function EMISchedule({
                 ₹
                 {updateEMI.due_amount_on_current_day &&
                 updateEMI.due_amount_on_current_day
-                  ? Math.round(updateEMI.due_amount_on_current_day)
-                  : Math.round(activeLoan?.due_amount_on_current_day)}
+                  ? Math.ceil(updateEMI.due_amount_on_current_day)
+                  : Math.ceil(activeLoan?.due_amount_on_current_day)}
               </p>
             </div>
 
@@ -1493,8 +1488,8 @@ function EMISchedule({
                 ₹
                 {updateEMI.due_interest_on_current_day &&
                 updateEMI.due_interest_on_current_day
-                  ? Math.round(updateEMI.due_interest_on_current_day)
-                  : Math.round(activeLoan?.due_interest_on_current_day)}
+                  ? Math.ceil(updateEMI.due_interest_on_current_day)
+                  : Math.ceil(activeLoan?.due_interest_on_current_day)}
               </p>
             </div>
 
@@ -1505,8 +1500,8 @@ function EMISchedule({
               <p className="md:text-lg text-gray-800 font-bold">
                 ₹
                 {updateEMI.penal_charges && updateEMI.penal_charges
-                  ? Math.round(updateEMI.penal_charges)
-                  : Math.round(activeLoan?.penal_charges)}
+                  ? Math.ceil(updateEMI.penal_charges)
+                  : Math.ceil(activeLoan?.penal_charges)}
               </p>
             </div>
           </div>
@@ -1569,6 +1564,28 @@ function EMISchedule({
                     <ErrorMsg error={UpdatePayment.errors.collectionMode} />
                   )}
               </div>
+               {UpdatePayment.values.status == 15 && (
+                <div className="col-span-1">
+                  <SelectInput
+                    label="Account Status"
+                    placeholder="Select"
+                    icon="MdModelTraining"
+                    name="waive_off_status"
+                    id="waive_off_status"
+                    options={[
+                      { label: "Fully Paid", value: "10" },
+                      { label: "Foreclosed", value: "11" },
+                    ]}
+                    onChange={UpdatePayment.handleChange}
+                    onBlur={UpdatePayment.handleBlur}
+                    value={UpdatePayment.values.waive_off_status}
+                  />
+                  {UpdatePayment.touched.waive_off_status &&
+                    UpdatePayment.errors.waive_off_status && (
+                      <ErrorMsg error={UpdatePayment.errors.waive_off_status} />
+                    )}
+                </div>
+              )}
               <div className="col-span-1">
                 <TextInput
                   readOnly={UpdatePayment.values.status === "10"}
@@ -1592,7 +1609,7 @@ function EMISchedule({
                 UpdatePayment.values.status !== "6" && (
                   <div className="col-span-1">
                     <TextInput
-                      label="Settled Amount"
+                      label="Settled Amount/ Waiver Amount"
                       icon="IoDocumentTextOutline"
                       placeholder="Enter waive off amount (required for status other than 10 or 11)"
                       name="waiveOff"
@@ -1693,29 +1710,7 @@ function EMISchedule({
                   )}
               </div>
 
-              {UpdatePayment.values.status == 15 && (
-                <div className="col-span-1">
-                  <SelectInput
-                    label="waive-off Status"
-                    placeholder="Select"
-                    icon="MdModelTraining"
-                    name="waive_off_status"
-                    id="waive_off_status"
-                    options={[
-                      { label: "Fully Paid", value: "10" },
-                      { label: "Foreclosed", value: "11" },
-                    ]}
-                    onChange={UpdatePayment.handleChange}
-                    onBlur={UpdatePayment.handleBlur}
-                    value={UpdatePayment.values.waive_off_status}
-                  />
-                  {UpdatePayment.touched.waive_off_status &&
-                    UpdatePayment.errors.waive_off_status && (
-                      <ErrorMsg error={UpdatePayment.errors.waive_off_status} />
-                    )}
-                </div>
-              )}
-
+             
             </div>
             <div className="flex justify-end gap-4 mt-2">
               <Button
@@ -1728,7 +1723,7 @@ function EMISchedule({
                 btnName={"Cancel"}
                 btnIcon={"IoCloseCircleOutline"}
                 type={"button"}
-                onClick={() => setIsOpen(false)}
+                onClick={() => {setIsOpen(false), UpdatePayment.resetForm()}}
                 style="min-w-[100px] border border-red-500 text-red-500 mt-4 py-1 px-4"
               />
             </div>
